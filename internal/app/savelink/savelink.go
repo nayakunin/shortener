@@ -1,6 +1,7 @@
 package savelink
 
 import (
+	"fmt"
 	"github.com/nayakunin/shortener/internal/app/utils"
 	"io"
 	"net/http"
@@ -28,7 +29,7 @@ func Handler(w http.ResponseWriter, r *http.Request, storage Storage) {
 	storage.Add(key, url)
 
 	w.WriteHeader(http.StatusCreated)
-	_, err = w.Write([]byte(key))
+	_, err = w.Write([]byte(fmt.Sprintf("http://localhost:8080/%s", key)))
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
