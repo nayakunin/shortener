@@ -1,6 +1,9 @@
 package storage
 
-import "sync"
+import (
+	"github.com/nayakunin/shortener/internal/app/utils"
+	"sync"
+)
 
 type Storage struct {
 	mu    sync.Mutex
@@ -21,9 +24,12 @@ func (s *Storage) Get(key string) (string, bool) {
 	return link, ok
 }
 
-func (s *Storage) Add(key, link string) {
+func (s *Storage) Add(link string) string {
+	key := utils.RandSeq(5)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	s.links[key] = link
+
+	return key
 }

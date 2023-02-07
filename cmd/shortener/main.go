@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/nayakunin/shortener/internal/app/getlink"
-	"github.com/nayakunin/shortener/internal/app/savelink"
+	"github.com/nayakunin/shortener/internal/app/handlers/getlink"
+	"github.com/nayakunin/shortener/internal/app/handlers/savelink"
 	"github.com/nayakunin/shortener/internal/app/storage"
 	"log"
 	"math/rand"
@@ -18,9 +18,9 @@ func main() {
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
-			savelink.Handler(w, r, s)
+			savelink.Handler(s)(w, r)
 		case http.MethodGet:
-			getlink.Handler(w, r, s)
+			getlink.Handler(s)(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusBadRequest)
 		}
