@@ -76,6 +76,8 @@ func TestGetLink(t *testing.T) {
 			h.ServeHTTP(w, request)
 			res := w.Result()
 
+			defer res.Body.Close()
+
 			if tt.shouldCheckLocation {
 				assert.Equal(t, tt.links["link"], res.Header.Get("Location"))
 			}

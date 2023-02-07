@@ -61,6 +61,8 @@ func TestSaveLink(t *testing.T) {
 			h.ServeHTTP(w, request)
 			res := w.Result()
 
+			defer res.Body.Close()
+
 			resBody, err := io.ReadAll(res.Body)
 			require.NoError(t, err)
 			assert.Equal(t, tt.want.response, string(resBody))
