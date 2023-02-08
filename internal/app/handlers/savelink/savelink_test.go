@@ -1,6 +1,7 @@
 package savelink
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
@@ -24,6 +25,12 @@ func (m *mockStorage) Add(link string) string {
 	key := "link"
 	m.links[key] = link
 	return key
+}
+
+func setupRouter(s *mockStorage) *gin.Engine {
+	r := gin.Default()
+	r.POST("/", Handler(s))
+	return r
 }
 
 func TestSaveLink(t *testing.T) {
@@ -54,11 +61,11 @@ func TestSaveLink(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := newMockStorage()
 
+			router := setupRouter(s)
+			w := httptest.NewRecorder()
 			body := strings.NewReader(tt.requestBody)
 			request := httptest.NewRequest(http.MethodPost, "/", body)
-			w := httptest.NewRecorder()
-			h := Handler(s)
-			h.ServeHTTP(w, request)
+			router.ServeHTTP(w, request)
 			res := w.Result()
 
 			defer res.Body.Close()

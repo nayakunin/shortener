@@ -1,6 +1,7 @@
 package getlink
 
 import (
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
@@ -10,22 +11,17 @@ type Storage interface {
 }
 
 // Handler handles GET requests
-func Handler(s Storage) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		id := r.URL.Path[1:]
-		if id == "" {
-			// throw error
-			http.Error(w, "Bad request", http.StatusBadRequest)
-			return
-		}
+func Handler(s Storage) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
 
 		link, ok := s.Get(id)
 		if !ok {
 			// throw error
-			http.Error(w, "Not found", http.StatusNotFound)
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Not found"})
 			return
 		}
 
-		http.Redirect(w, r, link, http.StatusTemporaryRedirect)
+		c.Redirect(http.StatusTemporaryRedirect, link)
 	}
 }

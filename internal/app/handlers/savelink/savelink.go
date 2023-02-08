@@ -2,6 +2,7 @@ package savelink
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 )
@@ -12,27 +13,30 @@ type Storage interface {
 }
 
 // Handler handles POST requests
-func Handler(s Storage) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func Handler(s Storage) gin.HandlerFunc {
+	return func(c *gin.Context) {
 		// read body
-		body, err := io.ReadAll(r.Body)
+		body, err := io.ReadAll(c.Request.Body)
 		if err != nil {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			return
 		}
+
+		defer func(Body io.ReadCloser) {
+			err := Body.Close()
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+				return
+			}
+		}(c.Request.Body)
 
 		url := string(body)
 
 		// add to storage
 		key := s.Add(url)
 
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusCreated)
-		_, err = w.Write([]byte(fmt.Sprintf("http://localhost:8080/%s", key)))
-		if err != nil {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
+		c.Header("Content-Type", "text/plain; charset=utf-8")
+		c.String(http.StatusCreated, fmt.Sprintf("http://localhost:8080/%s", key))
 	}
 
 }

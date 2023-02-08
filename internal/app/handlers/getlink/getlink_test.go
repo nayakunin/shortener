@@ -1,6 +1,7 @@
 package getlink
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -22,6 +23,12 @@ func (s *mockStorage) Get(key string) (string, bool) {
 	return link, ok
 }
 
+func setupRouter(s *mockStorage) *gin.Engine {
+	r := gin.Default()
+	r.GET("/:id", Handler(s))
+	return r
+}
+
 func TestGetLink(t *testing.T) {
 	type want struct {
 		statusCode  int
@@ -36,21 +43,12 @@ func TestGetLink(t *testing.T) {
 		want                want
 	}{
 		{
-			name:    "bad request",
-			request: "/",
-			links:   map[string]string{},
-			want: want{
-				statusCode:  http.StatusBadRequest,
-				contentType: "text/plain; charset=utf-8",
-			},
-		},
-		{
 			name:    "not found",
 			request: "/link",
 			links:   map[string]string{},
 			want: want{
 				statusCode:  http.StatusNotFound,
-				contentType: "text/plain; charset=utf-8",
+				contentType: "application/json; charset=utf-8",
 			},
 		},
 		{
@@ -70,10 +68,12 @@ func TestGetLink(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := newMockStorage(tt.links)
 
+			router := setupRouter(s)
+
 			request := httptest.NewRequest(http.MethodGet, tt.request, nil)
 			w := httptest.NewRecorder()
-			h := Handler(s)
-			h.ServeHTTP(w, request)
+			router.ServeHTTP(w, request)
+
 			res := w.Result()
 
 			defer res.Body.Close()
