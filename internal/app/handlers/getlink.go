@@ -1,17 +1,14 @@
-package getlink
+package handlers
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
-// Storage interface
-type Storage interface {
-	Get(key string) (string, bool)
-}
-
-// Handler handles GET requests
-func Handler(s Storage) gin.HandlerFunc {
+// GetLink handles GET requests
+func GetLink(s storage.Storager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
 

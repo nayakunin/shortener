@@ -1,33 +1,14 @@
-package getlink
+package handlers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/handlers/testutils"
+	"github.com/stretchr/testify/assert"
 )
-
-type mockStorage struct {
-	links map[string]string
-}
-
-func newMockStorage(links map[string]string) *mockStorage {
-	return &mockStorage{
-		links: links,
-	}
-}
-
-func (s *mockStorage) Get(key string) (string, bool) {
-	link, ok := s.links[key]
-	return link, ok
-}
-
-func setupRouter(s *mockStorage) *gin.Engine {
-	r := gin.Default()
-	r.GET("/:id", Handler(s))
-	return r
-}
 
 func TestGetLink(t *testing.T) {
 	type want struct {
@@ -66,9 +47,10 @@ func TestGetLink(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := newMockStorage(tt.links)
+			s := testutils.NewMockStorage(&tt.links)
 
-			router := setupRouter(s)
+			router := gin.Default()
+			router.GET("/:id", GetLink(s))
 
 			request := httptest.NewRequest(http.MethodGet, tt.request, nil)
 			w := httptest.NewRecorder()
