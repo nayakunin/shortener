@@ -7,11 +7,11 @@ import (
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
-const paramId = "id"
+const paramID = "id"
 
 func GetLinkHandler(s storage.Storager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.Param(paramId)
+		id := c.Param(paramID)
 
 		link, ok := s.Get(id)
 		if !ok {
