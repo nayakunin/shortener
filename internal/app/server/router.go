@@ -6,10 +6,10 @@ import (
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
-func setupRouter(s *storage.Storage) *gin.Engine {
+func setupRouter(s storage.Storager) *gin.Engine {
 	r := gin.Default()
-	r.POST("/", handlers.SaveLink(s))
-	r.GET("/:id", handlers.GetLink(s))
+	r.POST("/", handlers.SaveLinkHandler(s))
+	r.GET("/:id", handlers.GetLinkHandler(s))
 	return r
 }
 

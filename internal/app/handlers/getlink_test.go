@@ -50,7 +50,7 @@ func TestGetLink(t *testing.T) {
 			s := testutils.NewMockStorage(&tt.links)
 
 			router := gin.Default()
-			router.GET("/:id", GetLink(s))
+			router.GET("/:id", GetLinkHandler(s))
 
 			request := httptest.NewRequest(http.MethodGet, tt.request, nil)
 			w := httptest.NewRecorder()

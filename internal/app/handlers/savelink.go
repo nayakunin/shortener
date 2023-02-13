@@ -11,8 +11,7 @@ import (
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
-// SaveLink handles POST requests
-func SaveLink(s storage.Storager) gin.HandlerFunc {
+func SaveLinkHandler(s storage.Storager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// read body
 		body, err := io.ReadAll(c.Request.Body)
@@ -55,7 +54,7 @@ func SaveLink(s storage.Storager) gin.HandlerFunc {
 		}
 
 		c.Header("Content-Type", "text/plain; charset=utf-8")
-		c.String(http.StatusCreated, fmt.Sprintf("%s/%s", config.HOST, key))
+		c.String(http.StatusCreated, fmt.Sprintf("%s/%s", config.DefaultHostAddress, key))
 	}
 
 }

@@ -35,7 +35,7 @@ func TestSaveLink(t *testing.T) {
 			shouldCheckResponse: true,
 			want: want{
 				statusCode:  http.StatusCreated,
-				response:    fmt.Sprintf("%s/%s", config.HOST, "link"),
+				response:    fmt.Sprintf("%s/%s", config.DefaultHostAddress, "link"),
 				contentType: "text/plain; charset=utf-8",
 			},
 		},
@@ -72,7 +72,7 @@ func TestSaveLink(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testutils.NewMockStorage(tt.links)
 			router := gin.Default()
-			router.POST("/", SaveLink(s))
+			router.POST("/", SaveLinkHandler(s))
 
 			w := httptest.NewRecorder()
 			body := strings.NewReader(tt.requestBody)
