@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -20,9 +22,15 @@ type ShortenResponse struct {
 
 func ShortenHandler(s storage.Storager) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		body, err := io.ReadAll(c.Request.Body)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
 		var req ShortenRequest
-		if err := c.BindJSON(&req); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+		err = json.Unmarshal(body, &req)
+		if err != nil {
 			return
 		}
 
@@ -31,7 +39,7 @@ func ShortenHandler(s storage.Storager) gin.HandlerFunc {
 			return
 		}
 
-		_, err := url.ParseRequestURI(req.URL)
+		_, err = url.ParseRequestURI(req.URL)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid url"})
 			return
