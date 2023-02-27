@@ -10,6 +10,7 @@ func setupRouter(s storage.Storager) *gin.Engine {
 	r := gin.Default()
 	r.POST("/", handlers.SaveLinkHandler(s))
 	r.GET("/:id", handlers.GetLinkHandler(s))
+	r.POST("/api/shorten", handlers.ShortenHandler(s))
 	return r
 }
 
