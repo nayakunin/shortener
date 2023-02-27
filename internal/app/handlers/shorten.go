@@ -11,7 +11,7 @@ import (
 )
 
 type ShortenRequest struct {
-	Url string `json:"url"`
+	URL string `json:"url"`
 }
 
 type ShortenResponse struct {
@@ -26,18 +26,18 @@ func ShortenHandler(s storage.Storager) gin.HandlerFunc {
 			return
 		}
 
-		if len(req.Url) == 0 {
+		if len(req.URL) == 0 {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Empty request body"})
 			return
 		}
 
-		_, err := url.ParseRequestURI(req.Url)
+		_, err := url.ParseRequestURI(req.URL)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid url"})
 			return
 		}
 
-		key, err := s.Add(req.Url)
+		key, err := s.Add(req.URL)
 		if err != nil {
 			if err == storage.ErrKeyExists {
 				c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": "Key already exists"})
