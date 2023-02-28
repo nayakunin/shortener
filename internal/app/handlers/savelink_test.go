@@ -35,7 +35,7 @@ func TestSaveLink(t *testing.T) {
 			shouldCheckResponse: true,
 			want: want{
 				statusCode:  http.StatusCreated,
-				response:    fmt.Sprintf("%s:%s/%s", config.Config.BaseURL, config.Config.Port, "link"),
+				response:    fmt.Sprintf("%s/%s", config.Config.BaseURL, "link"),
 				contentType: "text/plain; charset=utf-8",
 			},
 		},

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"math/rand"
 	"time"
@@ -20,5 +19,5 @@ func main() {
 
 	r := server.NewRouter()
 
-	log.Fatal(r.Run(fmt.Sprintf("%s:%s", config.Config.ServerAddress, config.Config.Port)))
+	log.Fatal(r.Run(config.Config.ServerAddress))
 }
