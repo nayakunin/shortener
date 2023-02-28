@@ -35,7 +35,7 @@ func TestShorten(t *testing.T) {
 			shouldCheckResponse: true,
 			want: want{
 				statusCode:  http.StatusCreated,
-				response:    fmt.Sprintf(`{"result":"%s/%s"}`, config.DefaultHostAddress, "link"),
+				response:    fmt.Sprintf(`{"result":"%s:%s/%s"}`, config.Config.BaseURL, config.Config.Port, "link"),
 				contentType: "application/json; charset=utf-8",
 			},
 		},

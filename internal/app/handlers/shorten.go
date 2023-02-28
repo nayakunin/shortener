@@ -56,6 +56,6 @@ func ShortenHandler(s storage.Storager) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusCreated, ShortenResponse{Result: fmt.Sprintf("%s/%s", config.DefaultHostAddress, key)})
+		c.JSON(http.StatusCreated, ShortenResponse{Result: fmt.Sprintf("%s:%s/%s", config.Config.BaseURL, config.Config.Port, key)})
 	}
 }

@@ -1,11 +1,5 @@
 package utils
 
-import (
-	"math"
-	"strings"
-)
-
-const base = 62
 const charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 func Encode(input string) string {
@@ -29,14 +23,4 @@ func encodeInt(num int64) string {
 		num = num / int64(length)
 	}
 	return string(result)
-}
-
-func Decode(str string) int64 {
-	var result int64
-	exponent := float64(len(str) - 1)
-	for _, c := range str {
-		result += int64(math.Pow(base, exponent)) * int64(strings.IndexByte(charset, byte(c)))
-		exponent -= 1
-	}
-	return result
 }

@@ -54,7 +54,7 @@ func SaveLinkHandler(s storage.Storager) gin.HandlerFunc {
 		}
 
 		c.Header("Content-Type", "text/plain; charset=utf-8")
-		c.String(http.StatusCreated, fmt.Sprintf("%s/%s", config.DefaultHostAddress, key))
+		c.String(http.StatusCreated, fmt.Sprintf("%s:%s/%s", config.Config.BaseURL, config.Config.Port, key))
 	}
 
 }
