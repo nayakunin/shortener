@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"math/rand"
-	"os"
 	"time"
 
 	"github.com/nayakunin/shortener/internal/app/server"
@@ -14,10 +12,6 @@ import (
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-
-	a := os.Getenv("FILE_STORAGE_PATH")
-
-	fmt.Println(a)
 
 	err := config.LoadConfig()
 	if err != nil {
