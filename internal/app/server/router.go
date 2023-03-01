@@ -14,7 +14,6 @@ func setupRouter(s storage.Storager) *gin.Engine {
 	return r
 }
 
-func NewRouter() *gin.Engine {
-	s := storage.New()
+func NewRouter(s *storage.Storage) *gin.Engine {
 	return setupRouter(s)
 }

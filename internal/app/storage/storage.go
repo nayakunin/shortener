@@ -2,8 +2,10 @@ package storage
 
 import (
 	"errors"
+	"os"
 	"sync"
 
+	"github.com/nayakunin/shortener/internal/app/server/config"
 	"github.com/nayakunin/shortener/internal/app/utils"
 )
 
@@ -16,12 +18,35 @@ type Storager interface {
 
 type Storage struct {
 	sync.Mutex
+	file  *os.File
 	links map[string]string
 }
 
 func New() *Storage {
+	if config.Config.FileStoragePath == "" {
+		return &Storage{
+			links: make(map[string]string),
+		}
+	}
+
+	file, err := os.OpenFile(config.Config.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		panic(err)
+	}
+
+	var links map[string]string
+	if config.Config.FileStoragePath != "" {
+		links, err = utils.ReadLinksFromFile(file)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		links = make(map[string]string)
+	}
+
 	return &Storage{
-		links: make(map[string]string),
+		file:  file,
+		links: links,
 	}
 }
 
@@ -44,6 +69,19 @@ func (s *Storage) Add(link string) (string, error) {
 	}
 
 	s.links[key] = link
+	if s.file != nil {
+		if err := utils.WriteLinkToFile(s.file, key, link); err != nil {
+			return "", err
+		}
+	}
 
 	return key, nil
+}
+
+func (s *Storage) Close() error {
+	if s.file != nil {
+		return s.file.Close()
+	}
+
+	return nil
 }
