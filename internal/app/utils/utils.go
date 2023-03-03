@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/csv"
 	"fmt"
 	"os"
@@ -8,29 +10,26 @@ import (
 	"github.com/nayakunin/shortener/internal/app/server/config"
 )
 
-const charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-
 func Encode(input string) string {
-	inputBytes := []byte(input)
-	var num int64
-	for i, b := range inputBytes {
-		num += int64(b) << uint64(8*i)
+	// Generate a random 6-byte sequence
+	randBytes := make([]byte, 6)
+	_, err := rand.Read(randBytes)
+	if err != nil {
+		panic(err)
 	}
-	return encodeInt(num)
-}
 
-func encodeInt(num int64) string {
-	if num == 0 {
-		return string(charset[0])
+	// Append the input string to the random bytes
+	bytes := append(randBytes, []byte(input)...)
+
+	// Encode the bytes using base64 encoding
+	encoded := base64.RawURLEncoding.EncodeToString(bytes)
+
+	// Truncate the encoded string to 8 characters
+	if len(encoded) > 8 {
+		encoded = encoded[:8]
 	}
-	var result []byte
-	chars := []byte(charset)
-	length := len(chars)
-	for num > 0 {
-		result = append(result, chars[num%int64(length)])
-		num = num / int64(length)
-	}
-	return string(result)
+
+	return encoded
 }
 
 func ReadLinksFromFile(file *os.File) (map[string]string, error) {
