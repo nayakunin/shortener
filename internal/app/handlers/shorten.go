@@ -47,6 +47,7 @@ func ShortenHandler(s storage.Storager) gin.HandlerFunc {
 
 		key, err := s.Add(req.URL)
 		if err != nil {
+			fmt.Println(err)
 			if err == storage.ErrKeyExists {
 				c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": "Key already exists"})
 				return

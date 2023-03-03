@@ -19,10 +19,6 @@ func main() {
 	}
 
 	s := storage.New()
-	defer func(s *storage.Storage) {
-		err := s.Close()
-		log.Fatal(err)
-	}(s)
 
 	r := server.NewRouter(s)
 

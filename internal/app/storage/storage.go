@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"sync"
 
@@ -29,24 +30,35 @@ func New() *Storage {
 		}
 	}
 
-	file, err := os.OpenFile(config.Config.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		panic(err)
-	}
-
-	var links map[string]string
 	if config.Config.FileStoragePath != "" {
-		links, err = utils.ReadLinksFromFile(file)
+		file, err := os.OpenFile(config.Config.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
+			fmt.Errorf("error opening file: %v", err)
 			panic(err)
 		}
-	} else {
-		links = make(map[string]string)
+
+		defer func(file *os.File) {
+			err := file.Close()
+			if err != nil {
+				fmt.Errorf("error closing file: %v", err)
+				panic(err)
+			}
+		}(file)
+
+		links, err := utils.ReadLinksFromFile(file)
+		if err != nil {
+			fmt.Errorf("error reading file: %v", err)
+			panic(err)
+		}
+
+		return &Storage{
+			file:  file,
+			links: links,
+		}
 	}
 
 	return &Storage{
-		file:  file,
-		links: links,
+		links: make(map[string]string),
 	}
 }
 
@@ -70,7 +82,7 @@ func (s *Storage) Add(link string) (string, error) {
 
 	s.links[key] = link
 	if s.file != nil {
-		if err := utils.WriteLinkToFile(s.file, key, link); err != nil {
+		if err := utils.WriteLinkToFile(key, link); err != nil {
 			return "", err
 		}
 	}

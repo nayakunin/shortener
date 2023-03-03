@@ -2,7 +2,10 @@ package utils
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
+
+	"github.com/nayakunin/shortener/internal/app/server/config"
 )
 
 const charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -50,7 +53,20 @@ func convertToMap(csvData [][]string) map[string]string {
 	return links
 }
 
-func WriteLinkToFile(file *os.File, key string, link string) error {
+func WriteLinkToFile(key string, link string) error {
+	file, err := os.OpenFile(config.Config.FileStoragePath, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			fmt.Errorf("error closing file: %v", err)
+			panic(err)
+		}
+	}(file)
+
 	writer := csv.NewWriter(file)
 
 	if err := writer.Write([]string{key, link}); err != nil {
