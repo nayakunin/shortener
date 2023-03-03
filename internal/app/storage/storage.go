@@ -33,21 +33,21 @@ func New() *Storage {
 	if config.Config.FileStoragePath != "" {
 		file, err := os.OpenFile(config.Config.FileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
-			fmt.Errorf("error opening file: %v", err)
+			fmt.Printf("error opening file: %v", err)
 			panic(err)
 		}
 
 		defer func(file *os.File) {
 			err := file.Close()
 			if err != nil {
-				fmt.Errorf("error closing file: %v", err)
+				fmt.Printf("error closing file: %v", err)
 				panic(err)
 			}
 		}(file)
 
 		links, err := utils.ReadLinksFromFile(file)
 		if err != nil {
-			fmt.Errorf("error reading file: %v", err)
+			fmt.Printf("error reading file: %v", err)
 			panic(err)
 		}
 

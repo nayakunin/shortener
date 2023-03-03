@@ -62,7 +62,7 @@ func WriteLinkToFile(key string, link string) error {
 	defer func(f *os.File) {
 		err := f.Close()
 		if err != nil {
-			fmt.Errorf("error closing file: %v", err)
+			fmt.Printf("error closing file: %v", err)
 			panic(err)
 		}
 	}(file)
