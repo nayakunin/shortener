@@ -27,14 +27,24 @@ func LoadConfig() error {
 	flag.Parse()
 
 	if Config.ServerAddress == "" {
+		if flagsConfig.ServerAddress == "" {
+			flagsConfig.ServerAddress = "localhost:8080"
+		}
+
 		Config.ServerAddress = flagsConfig.ServerAddress
 	}
 
 	if Config.BaseURL == "" {
+		if flagsConfig.BaseURL == "" {
+			flagsConfig.BaseURL = "http://localhost:8080"
+		}
 		Config.BaseURL = flagsConfig.BaseURL
 	}
 
 	if Config.FileStoragePath == "" {
+		if flagsConfig.FileStoragePath == "" {
+			flagsConfig.FileStoragePath = "/tmp/shortener"
+		}
 		Config.FileStoragePath = flagsConfig.FileStoragePath
 	}
 
