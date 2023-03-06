@@ -42,9 +42,6 @@ func LoadConfig() error {
 	}
 
 	if Config.FileStoragePath == "" {
-		if flagsConfig.FileStoragePath == "" {
-			flagsConfig.FileStoragePath = "/tmp/shortener"
-		}
 		Config.FileStoragePath = flagsConfig.FileStoragePath
 	}
 

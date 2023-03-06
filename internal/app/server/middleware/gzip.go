@@ -4,6 +4,7 @@ import (
 	"compress/gzip"
 	"github.com/gin-gonic/gin"
 	"log"
+	"strings"
 )
 
 type gzipWriter struct {
@@ -21,7 +22,7 @@ func (w gzipWriter) WriteString(s string) (int, error) {
 
 func Gzip() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if c.Request.Header.Get("Accept-Encoding") != "gzip" {
+		if !strings.Contains(c.Request.Header.Get("Accept-Encoding"), "gzip") {
 			c.Next()
 			return
 		}
