@@ -3,6 +3,7 @@ package middleware
 import (
 	"compress/gzip"
 	"github.com/gin-gonic/gin"
+	"io"
 	"log"
 	"strings"
 )
@@ -39,6 +40,30 @@ func Gzip() gin.HandlerFunc {
 				log.Fatal(c.AbortWithError(500, err))
 			}
 		}(gz)
+
+		// Decompressing the request body
+		reader, err := gzip.NewReader(c.Request.Body)
+		if err != nil {
+			log.Fatal(c.AbortWithError(500, err))
+			return
+		}
+
+		defer func(gzr *gzip.Reader) {
+			err := gzr.Close()
+			if err != nil {
+				log.Fatal(c.AbortWithError(500, err))
+			}
+		}(reader)
+
+		body, err := io.ReadAll(reader)
+		if err != nil {
+			log.Fatal(c.AbortWithError(500, err))
+			return
+		}
+
+		c.Request.Body = io.NopCloser(strings.NewReader(string(body)))
+		c.Request.Header.Del("Content-Encoding")
+		c.Request.ContentLength = int64(len(body))
 
 		c.Writer.Header().Set("Content-Encoding", "gzip")
 		c.Writer = &gzipWriter{c.Writer, gz}
