@@ -4,7 +4,6 @@ import (
 	"compress/gzip"
 	"github.com/gin-gonic/gin"
 	"io"
-	"log"
 	"strings"
 )
 
@@ -23,6 +22,32 @@ func (w gzipWriter) WriteString(s string) (int, error) {
 
 func Gzip() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if strings.Contains(c.Request.Header.Get("Content-Encoding"), "gzip") {
+			// Decompressing the request body
+			reader, err := gzip.NewReader(c.Request.Body)
+			if err != nil {
+				c.AbortWithError(500, err)
+				return
+			}
+
+			defer func(gzr *gzip.Reader) {
+				err := gzr.Close()
+				if err != nil {
+					c.AbortWithError(500, err)
+				}
+			}(reader)
+
+			body, err := io.ReadAll(reader)
+			if err != nil {
+				c.AbortWithError(500, err)
+				return
+			}
+
+			c.Request.Body = io.NopCloser(strings.NewReader(string(body)))
+			c.Request.Header.Del("Content-Encoding")
+			c.Request.ContentLength = int64(len(body))
+		}
+
 		if !strings.Contains(c.Request.Header.Get("Accept-Encoding"), "gzip") {
 			c.Next()
 			return
@@ -30,40 +55,16 @@ func Gzip() gin.HandlerFunc {
 
 		gz, err := gzip.NewWriterLevel(c.Writer, gzip.BestSpeed)
 		if err != nil {
-			log.Fatal(c.AbortWithError(500, err))
+			c.AbortWithError(500, err)
 			return
 		}
 
 		defer func(gz *gzip.Writer) {
 			err := gz.Close()
 			if err != nil {
-				log.Fatal(c.AbortWithError(500, err))
+				c.AbortWithError(500, err)
 			}
 		}(gz)
-
-		// Decompressing the request body
-		reader, err := gzip.NewReader(c.Request.Body)
-		if err != nil {
-			log.Fatal(c.AbortWithError(500, err))
-			return
-		}
-
-		defer func(gzr *gzip.Reader) {
-			err := gzr.Close()
-			if err != nil {
-				log.Fatal(c.AbortWithError(500, err))
-			}
-		}(reader)
-
-		body, err := io.ReadAll(reader)
-		if err != nil {
-			log.Fatal(c.AbortWithError(500, err))
-			return
-		}
-
-		c.Request.Body = io.NopCloser(strings.NewReader(string(body)))
-		c.Request.Header.Del("Content-Encoding")
-		c.Request.ContentLength = int64(len(body))
 
 		c.Writer.Header().Set("Content-Encoding", "gzip")
 		c.Writer = &gzipWriter{c.Writer, gz}
