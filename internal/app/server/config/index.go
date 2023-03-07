@@ -6,6 +6,9 @@ import (
 	"github.com/caarlos0/env/v7"
 )
 
+const defaultServerAddress = "localhost:8080"
+const defaultBaseURL = "http://localhost:8080"
+
 type config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS"`
 	BaseURL         string `env:"BASE_URL"`
@@ -21,14 +24,14 @@ func LoadConfig() error {
 	}
 
 	flagsConfig := new(config)
-	flag.StringVar(&flagsConfig.ServerAddress, "a", Config.ServerAddress, "server address")
-	flag.StringVar(&flagsConfig.BaseURL, "b", Config.BaseURL, "base url")
-	flag.StringVar(&flagsConfig.FileStoragePath, "f", Config.FileStoragePath, "file storage path")
+	flag.StringVar(&flagsConfig.ServerAddress, "a", "", "server address")
+	flag.StringVar(&flagsConfig.BaseURL, "b", "", "base url")
+	flag.StringVar(&flagsConfig.FileStoragePath, "f", "", "file storage path")
 	flag.Parse()
 
 	if Config.ServerAddress == "" {
 		if flagsConfig.ServerAddress == "" {
-			flagsConfig.ServerAddress = "localhost:8080"
+			flagsConfig.ServerAddress = defaultServerAddress
 		}
 
 		Config.ServerAddress = flagsConfig.ServerAddress
@@ -36,7 +39,7 @@ func LoadConfig() error {
 
 	if Config.BaseURL == "" {
 		if flagsConfig.BaseURL == "" {
-			flagsConfig.BaseURL = "http://localhost:8080"
+			flagsConfig.BaseURL = defaultBaseURL
 		}
 		Config.BaseURL = flagsConfig.BaseURL
 	}
