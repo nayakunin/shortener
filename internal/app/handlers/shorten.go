@@ -22,6 +22,11 @@ type ShortenResponse struct {
 
 func ShortenHandler(s storage.Storager) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		cfg, ok := c.MustGet("config").(config.Config)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
 		body, err := io.ReadAll(c.Request.Body)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
@@ -31,6 +36,7 @@ func ShortenHandler(s storage.Storager) gin.HandlerFunc {
 		var req ShortenRequest
 		err = json.Unmarshal(body, &req)
 		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 			return
 		}
 
@@ -57,6 +63,6 @@ func ShortenHandler(s storage.Storager) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusCreated, ShortenResponse{Result: fmt.Sprintf("%s/%s", config.Config.BaseURL, key)})
+		c.JSON(http.StatusCreated, ShortenResponse{Result: fmt.Sprintf("%s/%s", cfg.BaseURL, key)})
 	}
 }

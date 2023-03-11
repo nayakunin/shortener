@@ -2,10 +2,12 @@ package middleware
 
 import (
 	"compress/gzip"
-	"github.com/gin-gonic/gin"
 	"io"
 	"log"
+	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type gzipWriter struct {
@@ -26,20 +28,20 @@ func Gzip() gin.HandlerFunc {
 		if strings.Contains(c.Request.Header.Get("Content-Encoding"), "gzip") {
 			reader, err := gzip.NewReader(c.Request.Body)
 			if err != nil {
-				log.Print(c.AbortWithError(500, err))
+				log.Print(c.AbortWithError(http.StatusInternalServerError, err))
 				return
 			}
 
 			defer func(gzr *gzip.Reader) {
 				err := gzr.Close()
 				if err != nil {
-					log.Print(c.AbortWithError(500, err))
+					log.Print(c.AbortWithError(http.StatusInternalServerError, err))
 				}
 			}(reader)
 
 			body, err := io.ReadAll(reader)
 			if err != nil {
-				log.Print(c.AbortWithError(500, err))
+				log.Print(c.AbortWithError(http.StatusInternalServerError, err))
 				return
 			}
 
@@ -55,14 +57,14 @@ func Gzip() gin.HandlerFunc {
 
 		gz, err := gzip.NewWriterLevel(c.Writer, gzip.BestSpeed)
 		if err != nil {
-			log.Print(c.AbortWithError(500, err))
+			log.Print(c.AbortWithError(http.StatusInternalServerError, err))
 			return
 		}
 
 		defer func(gz *gzip.Writer) {
 			err := gz.Close()
 			if err != nil {
-				log.Print(c.AbortWithError(500, err))
+				log.Print(c.AbortWithError(http.StatusInternalServerError, err))
 			}
 		}(gz)
 

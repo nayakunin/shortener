@@ -10,7 +10,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nayakunin/shortener/internal/app/handlers/testutils"
-	"github.com/nayakunin/shortener/internal/app/server/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,6 +20,8 @@ func TestShorten(t *testing.T) {
 		contentType string
 		response    string
 	}
+
+	cfg := testutils.NewMockConfig()
 
 	tests := []struct {
 		name                string
@@ -35,7 +36,7 @@ func TestShorten(t *testing.T) {
 			shouldCheckResponse: true,
 			want: want{
 				statusCode:  http.StatusCreated,
-				response:    fmt.Sprintf(`{"result":"%s/%s"}`, config.Config.BaseURL, "link"),
+				response:    fmt.Sprintf(`{"result":"%s/%s"}`, cfg.BaseURL, "link"),
 				contentType: "application/json; charset=utf-8",
 			},
 		},
@@ -72,6 +73,7 @@ func TestShorten(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testutils.NewMockStorage(tt.links)
 			router := gin.Default()
+			testutils.AddContext(router, cfg)
 			router.POST("/", ShortenHandler(s))
 
 			w := httptest.NewRecorder()

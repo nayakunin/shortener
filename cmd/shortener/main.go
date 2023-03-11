@@ -13,14 +13,17 @@ import (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	err := config.LoadConfig()
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	s := storage.New()
+	s, err := storage.New(*cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	r := server.NewRouter(s)
+	r := server.NewRouter(*cfg, s)
 
-	log.Fatal(r.Run(config.Config.ServerAddress))
+	log.Fatal(r.Run(cfg.ServerAddress))
 }

@@ -13,6 +13,12 @@ import (
 
 func SaveLinkHandler(s storage.Storager) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		cfg, ok := c.MustGet("config").(config.Config)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			return
+		}
+
 		// read body
 		body, err := io.ReadAll(c.Request.Body)
 		if err != nil {
@@ -54,7 +60,7 @@ func SaveLinkHandler(s storage.Storager) gin.HandlerFunc {
 		}
 
 		c.Header("Content-Type", "text/plain; charset=utf-8")
-		c.String(http.StatusCreated, fmt.Sprintf("%s/%s", config.Config.BaseURL, key))
+		c.String(http.StatusCreated, fmt.Sprintf("%s/%s", cfg.BaseURL, key))
 	}
 
 }

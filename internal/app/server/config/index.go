@@ -8,45 +8,38 @@ import (
 
 const defaultServerAddress = "localhost:8080"
 const defaultBaseURL = "http://localhost:8080"
+const defaultFilePath = ""
 
-type config struct {
+type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS"`
 	BaseURL         string `env:"BASE_URL"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 }
 
-var Config config
-
-func LoadConfig() error {
-	err := env.Parse(&Config)
+func LoadConfig() (*Config, error) {
+	var config Config
+	err := env.Parse(&config)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	flagsConfig := new(config)
-	flag.StringVar(&flagsConfig.ServerAddress, "a", "", "server address")
-	flag.StringVar(&flagsConfig.BaseURL, "b", "", "base url")
-	flag.StringVar(&flagsConfig.FileStoragePath, "f", "", "file storage path")
+	flagsConfig := new(Config)
+	flag.StringVar(&flagsConfig.ServerAddress, "a", defaultServerAddress, "server address")
+	flag.StringVar(&flagsConfig.BaseURL, "b", defaultBaseURL, "base url")
+	flag.StringVar(&flagsConfig.FileStoragePath, "f", defaultFilePath, "file storage path")
 	flag.Parse()
 
-	if Config.ServerAddress == "" {
-		if flagsConfig.ServerAddress == "" {
-			flagsConfig.ServerAddress = defaultServerAddress
-		}
-
-		Config.ServerAddress = flagsConfig.ServerAddress
+	if config.ServerAddress == "" {
+		config.ServerAddress = flagsConfig.ServerAddress
 	}
 
-	if Config.BaseURL == "" {
-		if flagsConfig.BaseURL == "" {
-			flagsConfig.BaseURL = defaultBaseURL
-		}
-		Config.BaseURL = flagsConfig.BaseURL
+	if config.BaseURL == "" {
+		config.BaseURL = flagsConfig.BaseURL
 	}
 
-	if Config.FileStoragePath == "" {
-		Config.FileStoragePath = flagsConfig.FileStoragePath
+	if config.FileStoragePath == "" {
+		config.FileStoragePath = flagsConfig.FileStoragePath
 	}
 
-	return nil
+	return &config, nil
 }

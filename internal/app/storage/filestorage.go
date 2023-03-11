@@ -6,12 +6,13 @@ import (
 	"github.com/nayakunin/shortener/internal/app/utils"
 )
 
-type Storage struct {
+type FileStorage struct {
 	sync.Mutex
-	links map[string]string
+	fileStoragePath string
+	links           map[string]string
 }
 
-func (s *Storage) Get(key string) (string, bool) {
+func (s *FileStorage) Get(key string) (string, bool) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -19,7 +20,7 @@ func (s *Storage) Get(key string) (string, bool) {
 	return link, ok
 }
 
-func (s *Storage) Add(link string) (string, error) {
+func (s *FileStorage) Add(link string) (string, error) {
 	key := utils.Encode(link)
 
 	s.Lock()
@@ -30,6 +31,9 @@ func (s *Storage) Add(link string) (string, error) {
 	}
 
 	s.links[key] = link
+	if err := writeLinkToFile(s.fileStoragePath, key, link); err != nil {
+		return "", err
+	}
 
 	return key, nil
 }
