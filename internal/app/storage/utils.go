@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func restoreLinksFromFile(fileStoragePath string) (*FileStorage, error) {
+func restoreLinksFromFile(fileStoragePath string) (map[string]string, error) {
 	file, err := os.OpenFile(fileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		return nil, fmt.Errorf("error opening file: %w", err)
@@ -26,10 +26,7 @@ func restoreLinksFromFile(fileStoragePath string) (*FileStorage, error) {
 		return nil, fmt.Errorf("error reading file: %v", err)
 	}
 
-	return &FileStorage{
-		fileStoragePath: fileStoragePath,
-		links:           links,
-	}, nil
+	return links, nil
 }
 
 func readLinksFromFile(file *os.File) (map[string]string, error) {

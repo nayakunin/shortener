@@ -1,15 +1,12 @@
 package storage
 
 import (
-	"sync"
-
 	"github.com/nayakunin/shortener/internal/app/utils"
 )
 
 type FileStorage struct {
-	sync.Mutex
+	Storage
 	fileStoragePath string
-	links           map[string]string
 }
 
 func (s *FileStorage) Get(key string) (string, bool) {
