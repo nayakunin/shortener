@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/server"
 	"github.com/nayakunin/shortener/internal/app/server/config"
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
@@ -42,6 +43,13 @@ func (s *MockStorage) Add(link string) (string, error) {
 func NewMockConfig() config.Config {
 	return config.Config{
 		BaseURL: "http://localhost:8080",
+	}
+}
+
+func NewMockServer(storage storage.Storager, cfg config.Config) server.Server {
+	return server.Server{
+		Storage: storage,
+		Cfg:     cfg,
 	}
 }
 

@@ -23,8 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	s := server.NewServer(*cfg, storage)
-	r := server.NewRouter(s)
+	r := server.NewRouter(*cfg, storage)
 
 	log.Fatal(r.Run(cfg.ServerAddress))
 }

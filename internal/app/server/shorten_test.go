@@ -74,7 +74,7 @@ func TestShorten(t *testing.T) {
 			s := testutils.NewMockStorage(tt.links)
 			router := gin.Default()
 			testutils.AddContext(router, cfg)
-			server := NewServer(cfg, s)
+			server := testutils.NewMockServer(s, cfg)
 			router.POST("/", server.ShortenHandler)
 
 			w := httptest.NewRecorder()

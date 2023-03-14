@@ -2,14 +2,21 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/server/config"
 	"github.com/nayakunin/shortener/internal/app/server/middleware"
+	"github.com/nayakunin/shortener/internal/app/storage"
 )
+
+type Server struct {
+	Cfg     config.Config
+	Storage storage.Storager
+}
 
 func setupRouter(s Server) *gin.Engine {
 	r := gin.Default()
 
 	r.Use(func(c *gin.Context) {
-		c.Set("config", s.cfg)
+		c.Set("config", s.Cfg)
 		c.Next()
 	})
 
@@ -20,6 +27,9 @@ func setupRouter(s Server) *gin.Engine {
 	return r
 }
 
-func NewRouter(s Server) *gin.Engine {
-	return setupRouter(s)
+func NewRouter(cfg config.Config, s storage.Storager) *gin.Engine {
+	return setupRouter(Server{
+		Cfg:     cfg,
+		Storage: s,
+	})
 }
