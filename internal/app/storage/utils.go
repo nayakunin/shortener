@@ -7,28 +7,6 @@ import (
 	"os"
 )
 
-func restoreLinksFromFile(fileStoragePath string) (map[string]string, error) {
-	file, err := os.OpenFile(fileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		return nil, fmt.Errorf("error opening file: %w", err)
-	}
-
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			fmt.Printf("error closing file: %v", err)
-			return
-		}
-	}(file)
-
-	links, err := readLinksFromFile(file)
-	if err != nil {
-		return nil, fmt.Errorf("error reading file: %v", err)
-	}
-
-	return links, nil
-}
-
 func readLinksFromFile(file *os.File) (map[string]string, error) {
 	reader := csv.NewReader(file)
 	csvData, err := reader.ReadAll()

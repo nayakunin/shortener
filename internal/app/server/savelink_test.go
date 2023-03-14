@@ -74,7 +74,10 @@ func TestSaveLink(t *testing.T) {
 			s := testutils.NewMockStorage(tt.links)
 			router := gin.Default()
 			testutils.AddContext(router, cfg)
-			server := testutils.NewMockServer(s, cfg)
+			server := Server{
+				Storage: s,
+				Cfg:     cfg,
+			}
 			router.POST("/", server.SaveLinkHandler)
 
 			w := httptest.NewRecorder()

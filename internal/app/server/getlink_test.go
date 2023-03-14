@@ -49,7 +49,10 @@ func TestGetLink(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testutils.NewMockStorage(&tt.links)
 			cfg := testutils.NewMockConfig()
-			server := testutils.NewMockServer(s, cfg)
+			server := Server{
+				Storage: s,
+				Cfg:     cfg,
+			}
 
 			router := gin.Default()
 			router.GET("/:id", server.GetLinkHandler)
