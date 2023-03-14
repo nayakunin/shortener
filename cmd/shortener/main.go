@@ -7,7 +7,7 @@ import (
 
 	"github.com/nayakunin/shortener/internal/app/server"
 	"github.com/nayakunin/shortener/internal/app/server/config"
-	"github.com/nayakunin/shortener/internal/app/storage"
+	storagePackage "github.com/nayakunin/shortener/internal/app/storage"
 )
 
 func main() {
@@ -18,12 +18,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	s, err := storage.New(*cfg)
+	storage, err := storagePackage.New(*cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	r := server.NewRouter(*cfg, s)
+	s := server.NewServer(*cfg, storage)
+	r := server.NewRouter(s)
 
 	log.Fatal(r.Run(cfg.ServerAddress))
 }

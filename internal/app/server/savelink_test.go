@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"fmt"
@@ -9,12 +9,12 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nayakunin/shortener/internal/app/handlers/testutils"
+	"github.com/nayakunin/shortener/internal/app/server/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestShorten(t *testing.T) {
+func TestSaveLink(t *testing.T) {
 	type want struct {
 		statusCode  int
 		contentType string
@@ -32,17 +32,17 @@ func TestShorten(t *testing.T) {
 	}{
 		{
 			name:                "success",
-			requestBody:         `{"url": "https://google.com"}`,
+			requestBody:         "https://google.com",
 			shouldCheckResponse: true,
 			want: want{
 				statusCode:  http.StatusCreated,
-				response:    fmt.Sprintf(`{"result":"%s/%s"}`, cfg.BaseURL, "link"),
-				contentType: "application/json; charset=utf-8",
+				response:    fmt.Sprintf("%s/%s", cfg.BaseURL, "link"),
+				contentType: "text/plain; charset=utf-8",
 			},
 		},
 		{
 			name:        "empty body",
-			requestBody: `{ "url": "" }`,
+			requestBody: "",
 			want: want{
 				statusCode:  http.StatusBadRequest,
 				contentType: "application/json; charset=utf-8",
@@ -50,7 +50,7 @@ func TestShorten(t *testing.T) {
 		},
 		{
 			name:        "invalid url",
-			requestBody: `{"url": "google.com"}`,
+			requestBody: "google.com",
 			want: want{
 				statusCode:  http.StatusBadRequest,
 				contentType: "application/json; charset=utf-8",
@@ -58,7 +58,7 @@ func TestShorten(t *testing.T) {
 		},
 		{
 			name:        "duplicate url",
-			requestBody: `{"url": "https://google.com"}`,
+			requestBody: "https://google.com",
 			links: &map[string]string{
 				"link": "https://google.com",
 			},
@@ -74,7 +74,8 @@ func TestShorten(t *testing.T) {
 			s := testutils.NewMockStorage(tt.links)
 			router := gin.Default()
 			testutils.AddContext(router, cfg)
-			router.POST("/", ShortenHandler(s))
+			server := NewServer(cfg, s)
+			router.POST("/", server.SaveLinkHandler)
 
 			w := httptest.NewRecorder()
 			body := strings.NewReader(tt.requestBody)
