@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nayakunin/shortener/internal/app/handlers/testutils"
+	"github.com/nayakunin/shortener/internal/app/server/testutils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -48,9 +48,14 @@ func TestGetLink(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testutils.NewMockStorage(&tt.links)
+			cfg := testutils.NewMockConfig()
+			server := Server{
+				Storage: s,
+				Cfg:     cfg,
+			}
 
 			router := gin.Default()
-			router.GET("/:id", GetLinkHandler(s))
+			router.GET("/:id", server.GetLinkHandler)
 
 			request := httptest.NewRequest(http.MethodGet, tt.request, nil)
 			w := httptest.NewRecorder()

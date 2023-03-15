@@ -6,14 +6,24 @@ import (
 	"time"
 
 	"github.com/nayakunin/shortener/internal/app/server"
+	"github.com/nayakunin/shortener/internal/app/server/config"
+	storagePackage "github.com/nayakunin/shortener/internal/app/storage"
 )
-
-const PORT = ":8080"
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	r := server.NewRouter()
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	log.Fatal(r.Run(PORT))
+	storage, err := storagePackage.New(*cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r := server.NewRouter(*cfg, storage)
+
+	log.Fatal(r.Run(cfg.ServerAddress))
 }

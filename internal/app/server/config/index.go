@@ -1,3 +1,45 @@
 package config
 
-const DefaultHostAddress = "http://localhost:8080"
+import (
+	"flag"
+
+	"github.com/caarlos0/env/v7"
+)
+
+const defaultServerAddress = "localhost:8080"
+const defaultBaseURL = "http://localhost:8080"
+const defaultFilePath = ""
+
+type Config struct {
+	ServerAddress   string `env:"SERVER_ADDRESS"`
+	BaseURL         string `env:"BASE_URL"`
+	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+}
+
+func LoadConfig() (*Config, error) {
+	var config Config
+	err := env.Parse(&config)
+	if err != nil {
+		return nil, err
+	}
+
+	flagsConfig := new(Config)
+	flag.StringVar(&flagsConfig.ServerAddress, "a", defaultServerAddress, "server address")
+	flag.StringVar(&flagsConfig.BaseURL, "b", defaultBaseURL, "base url")
+	flag.StringVar(&flagsConfig.FileStoragePath, "f", defaultFilePath, "file storage path")
+	flag.Parse()
+
+	if config.ServerAddress == "" {
+		config.ServerAddress = flagsConfig.ServerAddress
+	}
+
+	if config.BaseURL == "" {
+		config.BaseURL = flagsConfig.BaseURL
+	}
+
+	if config.FileStoragePath == "" {
+		config.FileStoragePath = flagsConfig.FileStoragePath
+	}
+
+	return &config, nil
+}

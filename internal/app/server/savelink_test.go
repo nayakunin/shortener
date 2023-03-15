@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"fmt"
@@ -9,8 +9,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nayakunin/shortener/internal/app/handlers/testutils"
-	"github.com/nayakunin/shortener/internal/app/server/config"
+	"github.com/nayakunin/shortener/internal/app/server/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,6 +20,8 @@ func TestSaveLink(t *testing.T) {
 		contentType string
 		response    string
 	}
+
+	cfg := testutils.NewMockConfig()
 
 	tests := []struct {
 		name                string
@@ -35,7 +36,7 @@ func TestSaveLink(t *testing.T) {
 			shouldCheckResponse: true,
 			want: want{
 				statusCode:  http.StatusCreated,
-				response:    fmt.Sprintf("%s/%s", config.DefaultHostAddress, "link"),
+				response:    fmt.Sprintf("%s/%s", cfg.BaseURL, "link"),
 				contentType: "text/plain; charset=utf-8",
 			},
 		},
@@ -72,7 +73,12 @@ func TestSaveLink(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testutils.NewMockStorage(tt.links)
 			router := gin.Default()
-			router.POST("/", SaveLinkHandler(s))
+			testutils.AddContext(router, cfg)
+			server := Server{
+				Storage: s,
+				Cfg:     cfg,
+			}
+			router.POST("/", server.SaveLinkHandler)
 
 			w := httptest.NewRecorder()
 			body := strings.NewReader(tt.requestBody)
