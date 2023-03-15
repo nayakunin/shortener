@@ -16,13 +16,13 @@ func Auth() gin.HandlerFunc {
 		encryptedCookie, cookieReadingErr := c.Cookie("auth")
 		if cookieReadingErr != nil {
 			if cookieReadingErr == http.ErrNoCookie {
-				userId := uuid.NewString()
+				userID := uuid.NewString()
 				h := hmac.New(sha256.New, secret)
-				h.Write([]byte(userId))
+				h.Write([]byte(userID))
 				cookie := h.Sum(nil)
 
 				c.SetCookie("auth", string(cookie), 3600, "/", "", false, true)
-				c.Set("uuid", userId)
+				c.Set("uuid", userID)
 				c.Next()
 				return
 			}
@@ -40,13 +40,13 @@ func Auth() gin.HandlerFunc {
 		sign := h.Sum(nil)
 
 		if !hmac.Equal(sign, decryptedCookie) {
-			userId := uuid.NewString()
+			userID := uuid.NewString()
 			h := hmac.New(sha256.New, secret)
-			h.Write([]byte(userId))
+			h.Write([]byte(userID))
 			cookie := h.Sum(nil)
 
 			c.SetCookie("auth", string(cookie), 3600, "/", "", false, true)
-			c.Set("uuid", userId)
+			c.Set("uuid", userID)
 			c.Next()
 			return
 		}

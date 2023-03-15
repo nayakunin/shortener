@@ -17,10 +17,10 @@ func (s *Storage) Get(key string) (string, bool) {
 	defer s.Unlock()
 
 	link, ok := s.links[key]
-	return link.LongUrl, ok
+	return link.OriginalURL, ok
 }
 
-func (s *Storage) Add(link string, userId string) (string, error) {
+func (s *Storage) Add(link string, userID string) (string, error) {
 	key := utils.Encode(link)
 
 	s.Lock()
@@ -31,13 +31,13 @@ func (s *Storage) Add(link string, userId string) (string, error) {
 	}
 
 	linkObject := Link{
-		ShortUrl: key,
-		LongUrl:  link,
-		UserId:   userId,
+		ShortURL:    key,
+		OriginalURL: link,
+		UserID:      userID,
 	}
 
 	s.links[key] = linkObject
-	s.users[userId] = append(s.users[userId], linkObject)
+	s.users[userID] = append(s.users[userID], linkObject)
 
 	return key, nil
 }
@@ -48,7 +48,7 @@ func (s *Storage) GetUrlsByUser(id string) (map[string]string, error) {
 
 	links := make(map[string]string)
 	for _, link := range s.users[id] {
-		links[link.ShortUrl] = link.LongUrl
+		links[link.ShortURL] = link.OriginalURL
 	}
 
 	return links, nil

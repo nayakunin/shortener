@@ -6,13 +6,13 @@ import (
 )
 
 func (s Server) GetUrlsByUserHandler(c *gin.Context) {
-	userId, ok := c.MustGet("uuid").(string)
+	userID, ok := c.MustGet("uuid").(string)
 	if !ok {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	urls, err := s.Storage.GetUrlsByUser(userId)
+	urls, err := s.Storage.GetUrlsByUser(userID)
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return

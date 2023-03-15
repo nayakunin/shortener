@@ -7,9 +7,9 @@ import (
 )
 
 type MockLink struct {
-	ShortUrl string
-	LongUrl  string
-	UserId   string
+	ShortURL    string
+	OriginalURL string
+	UserID      string
 }
 
 type MockStorage struct {
@@ -18,13 +18,13 @@ type MockStorage struct {
 }
 
 func NewMockStorage(initialLinks []MockLink) *MockStorage {
-	var links map[string]MockLink
-	var users map[string][]MockLink
+	links := make(map[string]MockLink)
+	users := make(map[string][]MockLink)
 	if initialLinks != nil {
 		links = make(map[string]MockLink)
 		for _, link := range initialLinks {
-			links[link.ShortUrl] = link
-			users[link.UserId] = append(users[link.UserId], link)
+			links[link.ShortURL] = link
+			users[link.UserID] = append(users[link.UserID], link)
 		}
 	} else {
 		links = make(map[string]MockLink)
@@ -39,10 +39,10 @@ func NewMockStorage(initialLinks []MockLink) *MockStorage {
 
 func (s *MockStorage) Get(key string) (string, bool) {
 	link, ok := s.links[key]
-	return link.LongUrl, ok
+	return link.OriginalURL, ok
 }
 
-func (s *MockStorage) Add(link string, userId string) (string, error) {
+func (s *MockStorage) Add(link string, userID string) (string, error) {
 	key := "link"
 
 	if _, ok := s.links[key]; ok {
@@ -50,20 +50,20 @@ func (s *MockStorage) Add(link string, userId string) (string, error) {
 	}
 
 	linkObject := MockLink{
-		ShortUrl: key,
-		LongUrl:  link,
-		UserId:   userId,
+		ShortURL:    key,
+		OriginalURL: link,
+		UserID:      userID,
 	}
 
 	s.links[key] = linkObject
-	s.users[userId] = append(s.users[userId], linkObject)
+	s.users[userID] = append(s.users[userID], linkObject)
 	return key, nil
 }
 
-func (s *MockStorage) GetUrlsByUser(userId string) (map[string]string, error) {
+func (s *MockStorage) GetUrlsByUser(userID string) (map[string]string, error) {
 	links := make(map[string]string)
-	for _, link := range s.users[userId] {
-		links[link.ShortUrl] = link.LongUrl
+	for _, link := range s.users[userID] {
+		links[link.ShortURL] = link.OriginalURL
 	}
 
 	return links, nil

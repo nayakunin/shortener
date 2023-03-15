@@ -36,8 +36,8 @@ func TestGetLink(t *testing.T) {
 			request: "/link",
 			links: []testutils.MockLink{
 				{
-					LongUrl:  "https://google.com",
-					ShortUrl: "link",
+					OriginalURL: "https://google.com",
+					ShortURL:    "link",
 				},
 			},
 			want: want{
@@ -70,7 +70,7 @@ func TestGetLink(t *testing.T) {
 			if tt.shouldCheckLocation {
 				var link testutils.MockLink
 				for _, l := range tt.links {
-					if l.ShortUrl == tt.request[1:] {
+					if l.ShortURL == tt.request[1:] {
 						link = l
 						break
 					}

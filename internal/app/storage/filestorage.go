@@ -42,10 +42,10 @@ func (s *FileStorage) Get(key string) (string, bool) {
 	defer s.Unlock()
 
 	link, ok := s.links[key]
-	return link.ShortUrl, ok
+	return link.ShortURL, ok
 }
 
-func (s *FileStorage) Add(link string, userId string) (string, error) {
+func (s *FileStorage) Add(link string, userID string) (string, error) {
 	key := utils.Encode(link)
 
 	s.Lock()
@@ -56,14 +56,14 @@ func (s *FileStorage) Add(link string, userId string) (string, error) {
 	}
 
 	linkObject := Link{
-		ShortUrl: key,
-		LongUrl:  link,
-		UserId:   userId,
+		ShortURL:    key,
+		OriginalURL: link,
+		UserID:      userID,
 	}
 
 	s.links[key] = linkObject
-	s.users[userId] = append(s.users[userId], linkObject)
-	if err := writeLinkToFile(s.fileStoragePath, key, link, userId); err != nil {
+	s.users[userID] = append(s.users[userID], linkObject)
+	if err := writeLinkToFile(s.fileStoragePath, key, link, userID); err != nil {
 		return "", err
 	}
 
@@ -76,7 +76,7 @@ func (s *FileStorage) GetUrlsByUser(id string) (map[string]string, error) {
 
 	links := make(map[string]string)
 	for _, link := range s.users[id] {
-		links[link.ShortUrl] = link.LongUrl
+		links[link.ShortURL] = link.OriginalURL
 	}
 
 	return links, nil

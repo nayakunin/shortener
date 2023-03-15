@@ -61,8 +61,8 @@ func TestSaveLink(t *testing.T) {
 			requestBody: "https://google.com",
 			links: []testutils.MockLink{
 				{
-					LongUrl:  "https://google.com",
-					ShortUrl: "link",
+					OriginalURL: "https://google.com",
+					ShortURL:    "link",
 				},
 			},
 			want: want{

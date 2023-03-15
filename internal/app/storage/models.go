@@ -1,7 +1,7 @@
 package storage
 
 type Link struct {
-	ShortUrl string `json:"short_url"`
-	LongUrl  string `json:"original_url"`
-	UserId   string
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
+	UserID      string
 }

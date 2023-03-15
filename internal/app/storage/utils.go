@@ -30,9 +30,9 @@ func parseCSV(csvData [][]string) (map[string]Link, map[string][]Link) {
 		}
 
 		link := Link{
-			ShortUrl: row[0],
-			LongUrl:  row[1],
-			UserId:   row[2],
+			ShortURL:    row[0],
+			OriginalURL: row[1],
+			UserID:      row[2],
 		}
 
 		links[row[0]] = link
@@ -43,7 +43,7 @@ func parseCSV(csvData [][]string) (map[string]Link, map[string][]Link) {
 	return links, users
 }
 
-func writeLinkToFile(fileStoragePath string, key string, link string, userId string) error {
+func writeLinkToFile(fileStoragePath string, key string, link string, userID string) error {
 	file, err := os.OpenFile(fileStoragePath, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
@@ -59,7 +59,7 @@ func writeLinkToFile(fileStoragePath string, key string, link string, userId str
 
 	writer := csv.NewWriter(file)
 
-	if err := writer.Write([]string{key, link, userId}); err != nil {
+	if err := writer.Write([]string{key, link, userID}); err != nil {
 		return fmt.Errorf("error writing to file: %v", err)
 	}
 
