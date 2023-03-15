@@ -21,7 +21,7 @@ func NewMockStorage(initialLinks []MockLink) *MockStorage {
 	links := make(map[string]MockLink)
 	users := make(map[string][]MockLink)
 
-	if initialLinks != nil {
+	if len(initialLinks) > 0 {
 		for _, link := range initialLinks {
 			links[link.ShortURL] = link
 			users[link.UserID] = append(users[link.UserID], link)
