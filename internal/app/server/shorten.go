@@ -44,7 +44,13 @@ func (s Server) ShortenHandler(c *gin.Context) {
 		return
 	}
 
-	key, err := s.Storage.Add(req.URL)
+	userId, ok := c.MustGet("uuid").(string)
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	key, err := s.Storage.Add(req.URL, userId)
 	if err != nil {
 		fmt.Println(err)
 		if err == storage.ErrKeyExists {

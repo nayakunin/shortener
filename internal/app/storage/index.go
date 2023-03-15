@@ -10,18 +10,23 @@ var ErrKeyExists = errors.New("key already exists")
 
 type Storager interface {
 	Get(key string) (string, bool)
-	Add(link string) (string, error)
+	Add(link string, userId string) (string, error)
+	GetUrlsByUser(userId string) (map[string]string, error)
 }
 
 func newStorage() Storage {
 	return Storage{
-		links: make(map[string]string),
+		links: make(map[string]Link),
+		users: make(map[string][]Link),
 	}
 }
 
 func newFileStorage(fileStoragePath string) FileStorage {
 	return FileStorage{
-		Storage:         Storage{},
+		Storage: Storage{
+			links: make(map[string]Link),
+			users: make(map[string][]Link),
+		},
 		fileStoragePath: fileStoragePath,
 	}
 }

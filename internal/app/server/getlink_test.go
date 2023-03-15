@@ -19,14 +19,13 @@ func TestGetLink(t *testing.T) {
 	tests := []struct {
 		name                string
 		request             string
-		links               map[string]string
+		links               []testutils.MockLink
 		shouldCheckLocation bool
 		want                want
 	}{
 		{
 			name:    "not found",
 			request: "/link",
-			links:   map[string]string{},
 			want: want{
 				statusCode:  http.StatusNotFound,
 				contentType: "application/json; charset=utf-8",
@@ -35,8 +34,11 @@ func TestGetLink(t *testing.T) {
 		{
 			name:    "success",
 			request: "/link",
-			links: map[string]string{
-				"link": "https://google.com",
+			links: []testutils.MockLink{
+				{
+					LongUrl:  "https://google.com",
+					ShortUrl: "link",
+				},
 			},
 			want: want{
 				statusCode:  http.StatusTemporaryRedirect,
@@ -47,7 +49,7 @@ func TestGetLink(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := testutils.NewMockStorage(&tt.links)
+			s := testutils.NewMockStorage(tt.links)
 			cfg := testutils.NewMockConfig()
 			server := Server{
 				Storage: s,
@@ -66,7 +68,14 @@ func TestGetLink(t *testing.T) {
 			defer res.Body.Close()
 
 			if tt.shouldCheckLocation {
-				assert.Equal(t, tt.links["link"], res.Header.Get("Location"))
+				var link testutils.MockLink
+				for _, l := range tt.links {
+					if l.ShortUrl == tt.request[1:] {
+						link = l
+						break
+					}
+				}
+				assert.Equal(t, link, res.Header.Get("Location"))
 			}
 
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)

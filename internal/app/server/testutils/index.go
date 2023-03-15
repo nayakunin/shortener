@@ -6,37 +6,67 @@ import (
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
-type MockStorage struct {
-	links map[string]string
+type MockLink struct {
+	ShortUrl string
+	LongUrl  string
+	UserId   string
 }
 
-func NewMockStorage(initialLinks *map[string]string) *MockStorage {
-	var links map[string]string
+type MockStorage struct {
+	links map[string]MockLink
+	users map[string][]MockLink
+}
+
+func NewMockStorage(initialLinks []MockLink) *MockStorage {
+	var links map[string]MockLink
+	var users map[string][]MockLink
 	if initialLinks != nil {
-		links = *initialLinks
+		links = make(map[string]MockLink)
+		for _, link := range initialLinks {
+			links[link.ShortUrl] = link
+			users[link.UserId] = append(users[link.UserId], link)
+		}
 	} else {
-		links = make(map[string]string)
+		links = make(map[string]MockLink)
+		users = make(map[string][]MockLink)
 	}
 
 	return &MockStorage{
-		links,
+		links: links,
+		users: users,
 	}
 }
 
 func (s *MockStorage) Get(key string) (string, bool) {
 	link, ok := s.links[key]
-	return link, ok
+	return link.LongUrl, ok
 }
 
-func (s *MockStorage) Add(link string) (string, error) {
+func (s *MockStorage) Add(link string, userId string) (string, error) {
 	key := "link"
 
 	if _, ok := s.links[key]; ok {
 		return "", storage.ErrKeyExists
 	}
 
-	s.links[key] = link
+	linkObject := MockLink{
+		ShortUrl: key,
+		LongUrl:  link,
+		UserId:   userId,
+	}
+
+	s.links[key] = linkObject
+	s.users[userId] = append(s.users[userId], linkObject)
 	return key, nil
+}
+
+func (s *MockStorage) GetUrlsByUser(userId string) (map[string]string, error) {
+	links := make(map[string]string)
+	for _, link := range s.users[userId] {
+		links[link.ShortUrl] = link.LongUrl
+	}
+
+	return links, nil
 }
 
 func NewMockConfig() config.Config {

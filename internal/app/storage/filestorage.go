@@ -26,12 +26,13 @@ func (s *FileStorage) restoreData() error {
 		}
 	}(file)
 
-	links, err := readLinksFromFile(file)
+	links, users, err := readLinksFromFile(file)
 	if err != nil {
 		return fmt.Errorf("error reading file: %v", err)
 	}
 
 	s.links = links
+	s.users = users
 
 	return nil
 }
@@ -41,10 +42,10 @@ func (s *FileStorage) Get(key string) (string, bool) {
 	defer s.Unlock()
 
 	link, ok := s.links[key]
-	return link, ok
+	return link.ShortUrl, ok
 }
 
-func (s *FileStorage) Add(link string) (string, error) {
+func (s *FileStorage) Add(link string, userId string) (string, error) {
 	key := utils.Encode(link)
 
 	s.Lock()
@@ -54,10 +55,29 @@ func (s *FileStorage) Add(link string) (string, error) {
 		return "", ErrKeyExists
 	}
 
-	s.links[key] = link
-	if err := writeLinkToFile(s.fileStoragePath, key, link); err != nil {
+	linkObject := Link{
+		ShortUrl: key,
+		LongUrl:  link,
+		UserId:   userId,
+	}
+
+	s.links[key] = linkObject
+	s.users[userId] = append(s.users[userId], linkObject)
+	if err := writeLinkToFile(s.fileStoragePath, key, link, userId); err != nil {
 		return "", err
 	}
 
 	return key, nil
+}
+
+func (s *FileStorage) GetUrlsByUser(id string) (map[string]string, error) {
+	s.Lock()
+	defer s.Unlock()
+
+	links := make(map[string]string)
+	for _, link := range s.users[id] {
+		links[link.ShortUrl] = link.LongUrl
+	}
+
+	return links, nil
 }

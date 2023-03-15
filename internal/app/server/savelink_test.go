@@ -27,7 +27,7 @@ func TestSaveLink(t *testing.T) {
 		name                string
 		requestBody         string
 		shouldCheckResponse bool
-		links               *map[string]string
+		links               []testutils.MockLink
 		want                want
 	}{
 		{
@@ -59,8 +59,11 @@ func TestSaveLink(t *testing.T) {
 		{
 			name:        "duplicate url",
 			requestBody: "https://google.com",
-			links: &map[string]string{
-				"link": "https://google.com",
+			links: []testutils.MockLink{
+				{
+					LongUrl:  "https://google.com",
+					ShortUrl: "link",
+				},
 			},
 			want: want{
 				statusCode:  http.StatusConflict,
