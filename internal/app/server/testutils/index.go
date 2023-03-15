@@ -20,15 +20,12 @@ type MockStorage struct {
 func NewMockStorage(initialLinks []MockLink) *MockStorage {
 	links := make(map[string]MockLink)
 	users := make(map[string][]MockLink)
+
 	if initialLinks != nil {
-		links = make(map[string]MockLink)
 		for _, link := range initialLinks {
 			links[link.ShortURL] = link
 			users[link.UserID] = append(users[link.UserID], link)
 		}
-	} else {
-		links = make(map[string]MockLink)
-		users = make(map[string][]MockLink)
 	}
 
 	return &MockStorage{
