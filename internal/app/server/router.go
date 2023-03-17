@@ -23,9 +23,9 @@ func setupRouter(s Server) *gin.Engine {
 	r.Use(middleware.Gzip())
 	r.Use(middleware.Auth())
 	r.POST("/", s.SaveLinkHandler)
-	r.GET("/urls", s.GetUrlsByUserHandler)
 	r.GET("/:id", s.GetLinkHandler)
 	r.POST("/api/shorten", s.ShortenHandler)
+	r.GET("/api/user/urls", s.GetUrlsByUserHandler)
 	return r
 }
 
