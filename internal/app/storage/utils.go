@@ -14,19 +14,21 @@ func readLinksFromFile(file *os.File) (map[string]Link, map[string][]Link, error
 		return nil, nil, err
 	}
 
-	links, users := parseCSV(csvData)
+	links, users, err := parseCSV(csvData)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	return links, users, nil
 }
 
-func parseCSV(csvData [][]string) (map[string]Link, map[string][]Link) {
+func parseCSV(csvData [][]string) (map[string]Link, map[string][]Link, error) {
 	links := make(map[string]Link)
 	users := make(map[string][]Link)
 
 	for _, row := range csvData {
-		if len(row) != 2 {
-			log.Printf("invalid row: %v", row)
-			continue
+		if len(row) != 3 {
+			return nil, nil, fmt.Errorf("invalid row: %v", row)
 		}
 
 		link := Link{
@@ -40,7 +42,7 @@ func parseCSV(csvData [][]string) (map[string]Link, map[string][]Link) {
 
 	}
 
-	return links, users
+	return links, users, nil
 }
 
 func writeLinkToFile(fileStoragePath string, key string, link string, userID string) error {
