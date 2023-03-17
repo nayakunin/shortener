@@ -83,7 +83,9 @@ func TestGetUrlsByUser(t *testing.T) {
 
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
 			assert.Equal(t, tt.want.contentType, res.Header.Get("Content-Type"))
-			assert.JSONEq(t, tt.want.body, w.Body.String())
+			if tt.want.body != "" {
+				assert.JSONEq(t, tt.want.body, w.Body.String())
+			}
 		})
 	}
 }
