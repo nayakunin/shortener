@@ -42,7 +42,7 @@ func (s *FileStorage) Get(key string) (string, bool) {
 	defer s.Unlock()
 
 	link, ok := s.links[key]
-	return link.ShortURL, ok
+	return link.OriginalURL, ok
 }
 
 func (s *FileStorage) Add(link string, userID string) (string, error) {
