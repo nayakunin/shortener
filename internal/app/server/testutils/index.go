@@ -72,10 +72,10 @@ func NewMockConfig() config.Config {
 	}
 }
 
-func AddContext(r *gin.Engine, cfg config.Config) {
+func AddContext(r *gin.Engine, cfg config.Config, userID string) {
 	r.Use(func(c *gin.Context) {
 		c.Set("config", cfg)
-		c.Set("uuid", "userId")
+		c.Set("uuid", userID)
 		c.Next()
 	})
 }

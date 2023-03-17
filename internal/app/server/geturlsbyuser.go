@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/storage"
 	"net/http"
 )
 
@@ -19,9 +20,17 @@ func (s Server) GetUrlsByUserHandler(c *gin.Context) {
 	}
 
 	if len(urls) == 0 {
-		c.AbortWithStatus(http.StatusNoContent)
+		c.AbortWithStatusJSON(http.StatusNoContent, gin.H{"error": "No urls found"})
 		return
 	}
 
-	c.JSON(http.StatusOK, urls)
+	response := make([]storage.Link, 0, len(urls))
+	for shortLink, originalLink := range urls {
+		response = append(response, storage.Link{
+			ShortURL:    shortLink,
+			OriginalURL: originalLink,
+		})
+	}
+
+	c.JSON(http.StatusOK, response)
 }

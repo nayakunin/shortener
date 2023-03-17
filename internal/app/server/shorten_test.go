@@ -76,7 +76,7 @@ func TestShorten(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testutils.NewMockStorage(tt.links)
 			router := gin.Default()
-			testutils.AddContext(router, cfg)
+			testutils.AddContext(router, cfg, "userID")
 			server := Server{
 				Storage: s,
 				Cfg:     cfg,
