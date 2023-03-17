@@ -75,6 +75,7 @@ func NewMockConfig() config.Config {
 func AddContext(r *gin.Engine, cfg config.Config) {
 	r.Use(func(c *gin.Context) {
 		c.Set("config", cfg)
+		c.Set("uuid", "userId")
 		c.Next()
 	})
 }
