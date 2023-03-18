@@ -62,5 +62,5 @@ func (s Server) ShortenHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, ShortenResponse{Result: fmt.Sprintf("%s/%s", s.Cfg.BaseURL, key)})
+	c.JSON(http.StatusCreated, ShortenResponse{Result: s.formatURL(key)})
 }
