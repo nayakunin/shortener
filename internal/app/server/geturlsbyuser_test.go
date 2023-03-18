@@ -1,12 +1,13 @@
 package server
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/nayakunin/shortener/internal/app/server/testutils"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/server/testutils"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetUrlsByUser(t *testing.T) {
@@ -44,7 +45,7 @@ func TestGetUrlsByUser(t *testing.T) {
 			want: want{
 				statusCode:  http.StatusOK,
 				contentType: "application/json; charset=utf-8",
-				body:        "[{\"original_url\":\"https://google.com\",\"short_url\":\"link\"}]",
+				body:        "[{\"original_url\":\"https://google.com\",\"short_url\":\"http://localhost:8080/link\"}]",
 			},
 		},
 	}
