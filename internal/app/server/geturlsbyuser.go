@@ -1,10 +1,9 @@
 package server
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/nayakunin/shortener/internal/app/storage"
+	"net/http"
 )
 
 func (s Server) GetUrlsByUserHandler(c *gin.Context) {
@@ -28,7 +27,7 @@ func (s Server) GetUrlsByUserHandler(c *gin.Context) {
 	response := make([]storage.Link, 0, len(urls))
 	for shortLink, originalLink := range urls {
 		response = append(response, storage.Link{
-			ShortURL:    s.formatURL(shortLink),
+			ShortURL:    shortLink,
 			OriginalURL: originalLink,
 		})
 	}

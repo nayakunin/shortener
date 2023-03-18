@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -57,5 +58,5 @@ func (s Server) SaveLinkHandler(c *gin.Context) {
 	}
 
 	c.Header("Content-Type", "text/plain; charset=utf-8")
-	c.String(http.StatusCreated, s.formatURL(key))
+	c.String(http.StatusCreated, fmt.Sprintf("%s/%s", s.Cfg.BaseURL, key))
 }
