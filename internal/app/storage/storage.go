@@ -12,6 +12,13 @@ type Storage struct {
 	users map[string][]Link
 }
 
+func newStorage() Storage {
+	return Storage{
+		links: make(map[string]Link),
+		users: make(map[string][]Link),
+	}
+}
+
 func (s *Storage) Get(key string) (string, bool) {
 	s.Lock()
 	defer s.Unlock()

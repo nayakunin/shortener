@@ -12,29 +12,14 @@ type FileStorage struct {
 	fileStoragePath string
 }
 
-func (s *FileStorage) restoreData() error {
-	file, err := os.OpenFile(s.fileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		return fmt.Errorf("error opening file: %w", err)
+func newFileStorage(fileStoragePath string) FileStorage {
+	return FileStorage{
+		Storage: Storage{
+			links: make(map[string]Link),
+			users: make(map[string][]Link),
+		},
+		fileStoragePath: fileStoragePath,
 	}
-
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			fmt.Printf("error closing file: %v", err)
-			return
-		}
-	}(file)
-
-	links, users, err := readLinksFromFile(file)
-	if err != nil {
-		return fmt.Errorf("error reading file: %v", err)
-	}
-
-	s.links = links
-	s.users = users
-
-	return nil
 }
 
 func (s *FileStorage) Get(key string) (string, bool) {
@@ -80,4 +65,29 @@ func (s *FileStorage) GetUrlsByUser(id string) (map[string]string, error) {
 	}
 
 	return links, nil
+}
+
+func (s *FileStorage) restoreData() error {
+	file, err := os.OpenFile(s.fileStoragePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return fmt.Errorf("error opening file: %w", err)
+	}
+
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			fmt.Printf("error closing file: %v", err)
+			return
+		}
+	}(file)
+
+	links, users, err := readLinksFromFile(file)
+	if err != nil {
+		return fmt.Errorf("error reading file: %v", err)
+	}
+
+	s.links = links
+	s.users = users
+
+	return nil
 }
