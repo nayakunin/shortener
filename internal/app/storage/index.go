@@ -7,10 +7,12 @@ import (
 )
 
 var ErrKeyExists = errors.New("key already exists")
+var ErrBatchInvalidURL = errors.New("invalid url")
 
 type Storager interface {
 	Get(key string) (string, bool)
 	Add(link string, userID string) (string, error)
+	AddBatch(batch []BatchInput, userID string) ([]BatchOutput, error)
 	GetUrlsByUser(userID string) (map[string]string, error)
 }
 

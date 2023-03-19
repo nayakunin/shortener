@@ -27,6 +27,7 @@ func setupRouter(s Server) *gin.Engine {
 	r.GET("/:id", s.GetLinkHandler)
 	r.POST("/api/shorten", s.ShortenHandler)
 	r.GET("/api/user/urls", s.GetUrlsByUserHandler)
+	r.POST("/api/shorten/batch", s.ShortenBatchHandler)
 	return r
 }
 

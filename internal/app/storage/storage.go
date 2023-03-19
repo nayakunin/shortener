@@ -49,6 +49,22 @@ func (s *Storage) Add(link string, userID string) (string, error) {
 	return key, nil
 }
 
+func (s *Storage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput, error) {
+	output := make([]BatchOutput, len(batches))
+	for _, linkObject := range batches {
+		key, err := s.Add(linkObject.OriginalURL, userID)
+		if err != nil {
+			return nil, err
+		}
+		output = append(output, BatchOutput{
+			ShortURL:      key,
+			CorrelationID: linkObject.CorrelationID,
+		})
+	}
+
+	return output, nil
+}
+
 func (s *Storage) GetUrlsByUser(id string) (map[string]string, error) {
 	s.Lock()
 	defer s.Unlock()

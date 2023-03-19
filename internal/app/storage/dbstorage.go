@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"net/url"
 	"sync"
 	"time"
 
@@ -69,6 +70,48 @@ func (s *DBStorage) Add(link string, userID string) (string, error) {
 	}
 
 	return key, nil
+}
+
+func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	tx, err := s.Connection.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func(tx pgx.Tx, ctx context.Context) {
+		err := tx.Rollback(ctx)
+		if err != nil {
+			return
+		}
+	}(tx, ctx)
+
+	stmt, err := tx.Prepare(ctx, "insert", "INSERT INTO links (short_url, original_url, user_id) VALUES ($1, $2, $3)")
+	if err != nil {
+		return nil, err
+	}
+
+	output := make([]BatchOutput, len(batches))
+	for _, linkObject := range batches {
+		if _, err := url.ParseRequestURI(linkObject.OriginalURL); err != nil {
+			return nil, ErrBatchInvalidURL
+		}
+
+		key := utils.Encode(linkObject.OriginalURL)
+		_, err := tx.Exec(ctx, stmt.Name, key, linkObject.OriginalURL, userID)
+		if err != nil {
+			return nil, err
+		}
+
+		output = append(output, BatchOutput{
+			ShortURL:      key,
+			CorrelationID: linkObject.CorrelationID,
+		})
+	}
+
+	return output, nil
 }
 
 func (s *DBStorage) GetUrlsByUser(id string) (map[string]string, error) {
