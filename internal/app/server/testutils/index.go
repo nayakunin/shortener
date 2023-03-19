@@ -66,6 +66,21 @@ func (s *MockStorage) GetUrlsByUser(userID string) (map[string]string, error) {
 	return links, nil
 }
 
+func (s *MockStorage) AddBatch(batches []storage.BatchInput, userID string) ([]storage.BatchOutput, error) {
+	output := make([]storage.BatchOutput, len(batches))
+	for _, linkObject := range batches {
+		key, err := s.Add(linkObject.OriginalURL, userID)
+		if err != nil {
+			return nil, err
+		}
+		output = append(output, storage.BatchOutput{
+			ShortURL:      key,
+			CorrelationID: linkObject.CorrelationID,
+		})
+	}
+	return output, nil
+}
+
 func NewMockConfig() config.Config {
 	return config.Config{
 		BaseURL: "http://localhost:8080",
