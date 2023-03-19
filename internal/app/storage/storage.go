@@ -51,15 +51,15 @@ func (s *Storage) Add(link string, userID string) (string, error) {
 
 func (s *Storage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput, error) {
 	output := make([]BatchOutput, len(batches))
-	for _, linkObject := range batches {
+	for i, linkObject := range batches {
 		key, err := s.Add(linkObject.OriginalURL, userID)
 		if err != nil {
 			return nil, err
 		}
-		output = append(output, BatchOutput{
+		output[i] = BatchOutput{
 			ShortURL:      key,
 			CorrelationID: linkObject.CorrelationID,
-		})
+		}
 	}
 
 	return output, nil
