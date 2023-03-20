@@ -6,7 +6,7 @@ type BatchInput struct {
 }
 
 type BatchOutput struct {
-	ShortURL      string
+	Key           string
 	CorrelationID string
 }
 

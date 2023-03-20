@@ -68,15 +68,15 @@ func (s *MockStorage) GetUrlsByUser(userID string) (map[string]string, error) {
 
 func (s *MockStorage) AddBatch(batches []storage.BatchInput, userID string) ([]storage.BatchOutput, error) {
 	output := make([]storage.BatchOutput, len(batches))
-	for _, linkObject := range batches {
+	for i, linkObject := range batches {
 		key, err := s.Add(linkObject.OriginalURL, userID)
 		if err != nil {
 			return nil, err
 		}
-		output = append(output, storage.BatchOutput{
-			ShortURL:      key,
+		output[i] = storage.BatchOutput{
+			Key:           key,
 			CorrelationID: linkObject.CorrelationID,
-		})
+		}
 	}
 	return output, nil
 }

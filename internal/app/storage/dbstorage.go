@@ -73,9 +73,8 @@ func (s *DBStorage) Add(link string, userID string) (string, error) {
 }
 
 func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput, error) {
-	//ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	//defer cancel()
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	tx, err := s.Connection.Begin(ctx)
 	if err != nil {
@@ -107,9 +106,14 @@ func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput
 		}
 
 		output[i] = BatchOutput{
-			ShortURL:      key,
+			Key:           key,
 			CorrelationID: linkObject.CorrelationID,
 		}
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	return output, nil

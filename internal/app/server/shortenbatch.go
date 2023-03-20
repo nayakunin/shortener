@@ -2,8 +2,10 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nayakunin/shortener/internal/app/storage"
@@ -46,6 +48,12 @@ func (s Server) ShortenBatchHandler(c *gin.Context) {
 
 	input := make([]storage.BatchInput, len(req))
 	for i, v := range req {
+		_, err = url.ParseRequestURI(v.OriginalURL)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid url"})
+			return
+		}
+
 		input[i] = storage.BatchInput{
 			CorrelationID: v.CorrelationID,
 			OriginalURL:   v.OriginalURL,
@@ -72,7 +80,7 @@ func (s Server) ShortenBatchHandler(c *gin.Context) {
 	for i, v := range output {
 		response[i] = ShortenBatchOutput{
 			CorrelationID: v.CorrelationID,
-			ShortURL:      v.ShortURL,
+			ShortURL:      fmt.Sprintf("%s/%s", s.Cfg.BaseURL, v.Key),
 		}
 	}
 

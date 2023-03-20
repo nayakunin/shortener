@@ -57,7 +57,7 @@ func (s *Storage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput, 
 			return nil, err
 		}
 		output[i] = BatchOutput{
-			ShortURL:      key,
+			Key:           key,
 			CorrelationID: linkObject.CorrelationID,
 		}
 	}
