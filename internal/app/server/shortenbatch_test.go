@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -41,7 +42,7 @@ func TestShortenBatch(t *testing.T) {
 				statusCode: http.StatusCreated,
 				response: []ShortenBatchOutput{{
 					CorrelationID: "1",
-					ShortURL:      "link",
+					ShortURL:      fmt.Sprintf("%s/%s", cfg.BaseURL, "link"),
 				}},
 				contentType: "application/json; charset=utf-8",
 			},

@@ -88,6 +88,11 @@ func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput
 		}
 	}(tx, ctx)
 
+	checkStmt, err := tx.Prepare(ctx, "check", "SELECT 1 FROM links WHERE short_url = $1")
+	if err != nil {
+		return nil, err
+	}
+
 	stmt, err := tx.Prepare(ctx, "insert", "INSERT INTO links (short_url, original_url, user_id) VALUES ($1, $2, $3)")
 	if err != nil {
 		return nil, err
@@ -100,7 +105,13 @@ func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput
 		}
 
 		key := utils.Encode(linkObject.OriginalURL)
-		_, err := tx.Exec(ctx, stmt.Name, key, linkObject.OriginalURL, userID)
+
+		_, err := tx.Exec(ctx, checkStmt.Name, key)
+		if err == nil {
+			return nil, ErrKeyExists
+		}
+
+		_, err = tx.Exec(ctx, stmt.Name, key, linkObject.OriginalURL, userID)
 		if err != nil {
 			return nil, err
 		}
