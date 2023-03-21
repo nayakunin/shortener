@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/nayakunin/shortener/internal/app/utils"
 )
 
@@ -62,36 +63,23 @@ func (s *DBStorage) Add(link string, userID string) (string, error) {
 
 	key := utils.Encode(link)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	//ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	//defer cancel()
+	ctx := context.Background()
 
-	tx, err := s.Connection.Begin(ctx)
+	_, err := s.Connection.Exec(ctx, "INSERT INTO links (key, original_url, user_id) VALUES ($1, $2, $3)", key, link, userID)
 	if err != nil {
-		return "", err
-	}
+		if pgerr, ok := err.(*pgconn.PgError); ok {
+			if pgerr.Code == pgerrcode.UniqueViolation {
+				var prevKey string
+				err := s.Connection.QueryRow(ctx, "SELECT key FROM links WHERE original_url = $1", link).Scan(&prevKey)
+				if err != nil {
+					return "", err
+				}
 
-	defer func(tx pgx.Tx, ctx context.Context) {
-		err := tx.Rollback(ctx)
-		if err != nil {
-			return
+				return prevKey, ErrKeyExists
+			}
 		}
-	}(tx, ctx)
-
-	stmt, err := tx.Prepare(ctx, "insert", "INSERT INTO links (key, original_url, user_id) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING")
-	if err != nil {
-		if err.Error() == pgerrcode.UniqueViolation {
-			return key, ErrKeyExists
-		}
-		return "", err
-	}
-
-	_, err = tx.Exec(ctx, stmt.Name, key, link, userID)
-	if err != nil {
-		return "", err
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
 		return "", err
 	}
 
