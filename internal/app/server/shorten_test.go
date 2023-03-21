@@ -65,8 +65,10 @@ func TestShorten(t *testing.T) {
 					ShortURL:    "link",
 				},
 			},
+			shouldCheckResponse: true,
 			want: want{
 				statusCode:  http.StatusConflict,
+				response:    fmt.Sprintf(`{"result":"%s/%s"}`, cfg.BaseURL, "link"),
 				contentType: "application/json; charset=utf-8",
 			},
 		},

@@ -52,9 +52,8 @@ func (s Server) ShortenHandler(c *gin.Context) {
 
 	key, err := s.Storage.Add(req.URL, userID)
 	if err != nil {
-		fmt.Println(err)
 		if err == storage.ErrKeyExists {
-			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": "Key already exists"})
+			c.AbortWithStatusJSON(http.StatusConflict, ShortenResponse{Result: fmt.Sprintf("%s/%s", s.Cfg.BaseURL, key)})
 			return
 		}
 

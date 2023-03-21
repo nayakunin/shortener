@@ -65,9 +65,11 @@ func TestSaveLink(t *testing.T) {
 					ShortURL:    "link",
 				},
 			},
+			shouldCheckResponse: true,
 			want: want{
 				statusCode:  http.StatusConflict,
-				contentType: "application/json; charset=utf-8",
+				response:    fmt.Sprintf("%s/%s", cfg.BaseURL, "link"),
+				contentType: "text/plain; charset=utf-8",
 			},
 		},
 	}

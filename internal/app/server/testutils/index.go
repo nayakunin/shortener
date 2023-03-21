@@ -43,7 +43,7 @@ func (s *MockStorage) Add(link string, userID string) (string, error) {
 	key := "link"
 
 	if _, ok := s.links[key]; ok {
-		return "", storage.ErrKeyExists
+		return key, storage.ErrKeyExists
 	}
 
 	linkObject := MockLink{

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/nayakunin/shortener/internal/app/utils"
+	"github.com/pkg/errors"
 )
 
 type FileStorage struct {
@@ -37,7 +38,7 @@ func (s *FileStorage) Add(link string, userID string) (string, error) {
 	defer s.Unlock()
 
 	if _, ok := s.links[key]; ok {
-		return "", ErrKeyExists
+		return key, ErrKeyExists
 	}
 
 	linkObject := Link{
@@ -59,7 +60,7 @@ func (s *FileStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutp
 	output := make([]BatchOutput, len(batches))
 	for i, linkObject := range batches {
 		key, err := s.Add(linkObject.OriginalURL, userID)
-		if err != nil {
+		if err != nil && !errors.Is(err, ErrKeyExists) {
 			return nil, err
 		}
 		output[i] = BatchOutput{
