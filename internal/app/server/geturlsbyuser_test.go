@@ -25,10 +25,11 @@ func TestGetUrlsByUser(t *testing.T) {
 		want                want
 	}{
 		{
-			name:    "not found",
+			name:    "empty",
 			request: "/api/user/urls",
 			want: want{
-				statusCode:  http.StatusNoContent,
+				statusCode:  http.StatusOK,
+				body:        "[]",
 				contentType: "application/json; charset=utf-8",
 			},
 		},
