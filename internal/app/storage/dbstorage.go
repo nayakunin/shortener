@@ -35,13 +35,6 @@ func newDBStorage(databaseURL string) (*DBStorage, error) {
 		return nil, err
 	}
 
-	err = conn.Ping(context.Background())
-	if err == nil {
-		return &DBStorage{
-			Connection: conn,
-		}, nil
-	}
-
 	err = initDB(conn)
 	if err != nil {
 		return nil, err
