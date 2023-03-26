@@ -6,10 +6,11 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 var (
@@ -63,17 +64,17 @@ func Auth() gin.HandlerFunc {
 			c.SetCookie("auth", encoded, 3600, "/", "", false, true)
 			c.Set("uuid", value)
 			c.Next()
-		} else {
-			value, err = decodeCookie(cookie, secret)
+		}
+
+		value, err = decodeCookie(cookie, secret)
+		if err != nil {
+			value = uuid.NewString()
+			encoded, err := encodeCookie(value, secret)
 			if err != nil {
-				value = uuid.NewString()
-				encoded, err := encodeCookie(value, secret)
-				if err != nil {
-					c.AbortWithStatus(http.StatusInternalServerError)
-					return
-				}
-				c.SetCookie("auth", encoded, 3600, "/", "", false, true)
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
 			}
+			c.SetCookie("auth", encoded, 3600, "/", "", false, true)
 		}
 
 		c.Set("uuid", value)

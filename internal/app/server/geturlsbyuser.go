@@ -22,7 +22,7 @@ func (s Server) GetUrlsByUserHandler(c *gin.Context) {
 	}
 
 	if len(urls) == 0 {
-		c.AbortWithStatusJSON(http.StatusNoContent, gin.H{"error": "No urls found"})
+		c.JSON(http.StatusOK, []storage.Link{})
 		return
 	}
 
