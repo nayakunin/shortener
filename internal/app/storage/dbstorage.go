@@ -98,7 +98,7 @@ func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput
 		}
 	}(tx, ctx)
 
-	stmt, err := tx.Prepare(ctx, "insert", "INSERT INTO links (key, original_url, user_id) VALUES ($1, $2, $3)")
+	stmt, err := tx.Prepare(ctx, "insert", "INSERT INTO links (key, original_url, user_id) VALUES ($1, $2, $3) ON CONFLICT (original_url) DO NOTHING")
 	if err != nil {
 		return nil, err
 	}
