@@ -64,36 +64,19 @@ func (s *DBStorage) Add(link string, userID string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	//_, err := s.Connection.Exec(ctx, "INSERT INTO links (key, original_url, user_id) VALUES ($1, $2, $3)", key, link, userID)
-	//if err != nil {
-	//	if errors.Is(err, pgx.ErrNoRows) {
-	//		pgerr, _ := err.(*pgconn.PgError)
-	//		if pgerr.Code == pgerrcode.UniqueViolation {
-	//			var prevKey string
-	//			err := s.Connection.QueryRow(ctx, "SELECT key FROM links WHERE original_url = $1", link).Scan(&prevKey)
-	//			if err != nil {
-	//				return "", err
-	//			}
-	//
-	//			return prevKey, ErrKeyExists
-	//		}
-	//	}
-	//	return "", err
-	//}
-
-	var prevKey string
-	err := s.Connection.QueryRow(ctx, "INSERT INTO links (key, original_url, user_id) VALUES ($1, $2, $3) ON CONFLICT (original_url) DO NOTHING RETURNING key", key, link, userID).Scan(&prevKey)
+	res, err := s.Connection.Exec(ctx, "INSERT INTO links (key, original_url, user_id) VALUES ($1, $2, $3) ON CONFLICT (original_url) DO NOTHING", key, link, userID)
 	if err != nil {
 		return "", err
-		//pgerr, _ := err.(*pgconn.PgError)
-		//if pgerr.Code == pgerrcode.UniqueViolation {
-		//	err := s.Connection.QueryRow(ctx, "SELECT key FROM links WHERE original_url = $1", link).Scan(&prevKey)
-		//	if err != nil {
-		//		return "", err
-		//	}
-		//
-		//	return prevKey, ErrKeyExists
-		//}
+	}
+
+	if res.RowsAffected() == 0 {
+		var prevKey string
+		err := s.Connection.QueryRow(ctx, "SELECT key FROM links WHERE original_url = $1", link).Scan(&prevKey)
+		if err != nil {
+			return "", err
+		}
+
+		return prevKey, ErrKeyExists
 	}
 
 	return key, nil
