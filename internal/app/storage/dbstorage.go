@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"time"
 
@@ -11,7 +10,7 @@ import (
 )
 
 const Timeout = 5 * time.Second
-const MaxRequests = 100
+const MaxRequests = 10
 const DeleteRequestsTimeout = 3 * time.Second
 
 type RequestBatch struct {
@@ -73,10 +72,8 @@ func newDBStorage(databaseURL string) (*DBStorage, error) {
 
 	go func() {
 		for {
-			fmt.Println("Waiting for requests")
 			select {
 			case <-db.requestBuffer.timer.C:
-				fmt.Println("Timeout")
 				db.requestBuffer.timer.Reset(DeleteRequestsTimeout)
 				db.processDeleteRequests()
 			case <-db.requestBuffer.startChan:
@@ -94,22 +91,18 @@ func (s *DBStorage) Get(key string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
-	type Link struct {
-		OriginalURL string
-		IsDeleted   bool
-	}
-
-	var result Link
-	err := s.Connection.QueryRow(ctx, "SELECT original_url, is_deleted FROM links WHERE key = $1", key).Scan(&result)
+	var originalURL string
+	var isDeleted bool
+	err := s.Connection.QueryRow(ctx, "SELECT original_url, is_deleted FROM links WHERE key = $1", key).Scan(&originalURL, &isDeleted)
 	if err != nil {
 		return "", err
 	}
 
-	if result.IsDeleted {
+	if isDeleted {
 		return "", ErrKeyDeleted
 	}
 
-	return result.OriginalURL, nil
+	return originalURL, nil
 }
 
 func (s *DBStorage) Add(link string, userID string) (string, error) {
@@ -203,7 +196,6 @@ func (s *DBStorage) DeleteUserUrls(userID string, keys []string) error {
 }
 
 func (s *DBStorage) processDeleteRequests() {
-	fmt.Println("Processing requests", len(s.requestBuffer.buffer))
 	if len(s.requestBuffer.buffer) == 0 {
 		return
 	}
@@ -212,7 +204,6 @@ func (s *DBStorage) processDeleteRequests() {
 	defer cancel()
 
 	requests := s.requestBuffer.GetRequests()
-	fmt.Println("Requests", requests)
 
 	for _, batch := range requests {
 		_, err := s.Connection.Exec(ctx, "UPDATE links SET is_deleted = TRUE WHERE user_id = $1 AND key = ANY($2)", batch.UserID, batch.Keys)
