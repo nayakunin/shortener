@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"time"
 
@@ -9,10 +10,34 @@ import (
 	"github.com/nayakunin/shortener/internal/app/utils"
 )
 
-const TIMEOUT = 5 * time.Second
+const Timeout = 5 * time.Second
+const MaxRequests = 100
+const DeleteRequestsTimeout = 3 * time.Second
+
+type RequestBatch struct {
+	UserID string
+	Keys   []string
+}
+
+type RequestBuffer struct {
+	buffer      chan RequestBatch
+	maxRequests int
+	timer       *time.Timer
+	startChan   chan struct{}
+}
 
 type DBStorage struct {
-	Connection *pgx.Conn
+	Connection    *pgx.Conn
+	requestBuffer *RequestBuffer
+}
+
+func newRequestBuffer(maxRequests int) *RequestBuffer {
+	return &RequestBuffer{
+		buffer:      make(chan RequestBatch, maxRequests),
+		maxRequests: maxRequests,
+		timer:       time.NewTimer(DeleteRequestsTimeout),
+		startChan:   make(chan struct{}),
+	}
 }
 
 func initDB(conn *pgx.Conn) error {
@@ -41,13 +66,32 @@ func newDBStorage(databaseURL string) (*DBStorage, error) {
 		return nil, err
 	}
 
-	return &DBStorage{
-		Connection: conn,
-	}, nil
+	db := DBStorage{
+		Connection:    conn,
+		requestBuffer: newRequestBuffer(MaxRequests),
+	}
+
+	go func() {
+		for {
+			fmt.Println("Waiting for requests")
+			select {
+			case <-db.requestBuffer.timer.C:
+				fmt.Println("Timeout")
+				db.requestBuffer.timer.Reset(DeleteRequestsTimeout)
+				db.processDeleteRequests()
+			case <-db.requestBuffer.startChan:
+				db.requestBuffer.timer.Reset(DeleteRequestsTimeout)
+				db.processDeleteRequests()
+			}
+		}
+	}()
+
+	return &db, nil
+
 }
 
 func (s *DBStorage) Get(key string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
 	type Link struct {
@@ -71,7 +115,7 @@ func (s *DBStorage) Get(key string) (string, error) {
 func (s *DBStorage) Add(link string, userID string) (string, error) {
 	key := utils.Encode(link)
 
-	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
 	res, err := s.Connection.Exec(ctx, "INSERT INTO links (key, original_url, user_id) VALUES ($1, $2, $3) ON CONFLICT (original_url) DO NOTHING", key, link, userID)
@@ -93,7 +137,7 @@ func (s *DBStorage) Add(link string, userID string) (string, error) {
 }
 
 func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
 	tx, err := s.Connection.Begin(ctx)
@@ -141,7 +185,7 @@ func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput
 }
 
 func (s *DBStorage) GetUrlsByUser(id string) (map[string]string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
 	links := make(map[string]string)
@@ -154,13 +198,55 @@ func (s *DBStorage) GetUrlsByUser(id string) (map[string]string, error) {
 }
 
 func (s *DBStorage) DeleteUserUrls(userID string, keys []string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
-	defer cancel()
+	s.requestBuffer.AddRequest(userID, keys)
+	return nil
+}
 
-	_, err := s.Connection.Exec(ctx, "UPDATE links SET is_deleted = TRUE WHERE user_id = $1 AND key = ANY($2)", userID, keys)
-	if err != nil {
-		return err
+func (s *DBStorage) processDeleteRequests() {
+	fmt.Println("Processing requests", len(s.requestBuffer.buffer))
+	if len(s.requestBuffer.buffer) == 0 {
+		return
 	}
 
-	return nil
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
+	defer cancel()
+
+	requests := s.requestBuffer.GetRequests()
+	fmt.Println("Requests", requests)
+
+	for _, batch := range requests {
+		_, err := s.Connection.Exec(ctx, "UPDATE links SET is_deleted = TRUE WHERE user_id = $1 AND key = ANY($2)", batch.UserID, batch.Keys)
+		if err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+func (rb *RequestBuffer) AddRequest(userID string, keys []string) {
+	rb.buffer <- RequestBatch{
+		UserID: userID,
+		Keys:   keys,
+	}
+
+	if len(rb.buffer) == rb.maxRequests-1 {
+		rb.timer.Reset(DeleteRequestsTimeout)
+		rb.startChan <- struct{}{}
+	}
+}
+
+func (rb *RequestBuffer) GetRequests() []RequestBatch {
+	requests := make([]RequestBatch, 0, rb.maxRequests)
+
+	for i := 0; i < rb.maxRequests; i++ {
+		select {
+		case request := <-rb.buffer:
+			requests = append(requests, request)
+		default:
+			break
+		}
+	}
+
+	return requests
 }
