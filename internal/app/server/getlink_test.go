@@ -32,6 +32,21 @@ func TestGetLink(t *testing.T) {
 			},
 		},
 		{
+			name:    "gone",
+			request: "/link",
+			links: []testutils.MockLink{
+				{
+					OriginalURL: "https://google.com",
+					ShortURL:    "link",
+					IsDeleted:   true,
+				},
+			},
+			want: want{
+				statusCode:  http.StatusGone,
+				contentType: "application/json; charset=utf-8",
+			},
+		},
+		{
 			name:    "success",
 			request: "/link",
 			links: []testutils.MockLink{

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
 const paramID = "id"
@@ -16,9 +17,13 @@ func (s Server) GetLinkHandler(c *gin.Context) {
 		return
 	}
 
-	link, ok := s.Storage.Get(id)
-	if !ok {
-		// throw error
+	link, err := s.Storage.Get(id)
+	if err != nil {
+		if err == storage.ErrKeyDeleted {
+			c.AbortWithStatusJSON(http.StatusGone, gin.H{"error": "Gone"})
+			return
+		}
+
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		return
 	}

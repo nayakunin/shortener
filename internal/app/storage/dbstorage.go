@@ -20,7 +20,8 @@ func initDB(conn *pgx.Conn) error {
 		id SERIAL PRIMARY KEY,
 		key VARCHAR(255) NOT NULL,
 		original_url VARCHAR(255) UNIQUE NOT NULL,
-		user_id VARCHAR(255) NOT NULL
+		user_id VARCHAR(255) NOT NULL,
+		is_deleted BOOLEAN NOT NULL DEFAULT FALSE
 	)`)
 	if err != nil {
 		return err
@@ -45,17 +46,26 @@ func newDBStorage(databaseURL string) (*DBStorage, error) {
 	}, nil
 }
 
-func (s *DBStorage) Get(key string) (string, bool) {
+func (s *DBStorage) Get(key string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
 	defer cancel()
 
-	var result string
-	err := s.Connection.QueryRow(ctx, "SELECT original_url FROM links WHERE key = $1", key).Scan(&result)
-	if err != nil {
-		return "", false
+	type Link struct {
+		OriginalURL string
+		IsDeleted   bool
 	}
 
-	return result, true
+	var result Link
+	err := s.Connection.QueryRow(ctx, "SELECT original_url, is_deleted FROM links WHERE key = $1", key).Scan(&result)
+	if err != nil {
+		return "", err
+	}
+
+	if result.IsDeleted {
+		return "", ErrKeyDeleted
+	}
+
+	return result.OriginalURL, nil
 }
 
 func (s *DBStorage) Add(link string, userID string) (string, error) {
@@ -141,4 +151,16 @@ func (s *DBStorage) GetUrlsByUser(id string) (map[string]string, error) {
 	}
 
 	return links, nil
+}
+
+func (s *DBStorage) DeleteUserUrls(userID string, keys []string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT)
+	defer cancel()
+
+	_, err := s.Connection.Exec(ctx, "UPDATE links SET is_deleted = TRUE WHERE user_id = $1 AND key = ANY($2)", userID, keys)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

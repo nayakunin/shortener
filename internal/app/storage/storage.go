@@ -20,12 +20,21 @@ func newStorage() Storage {
 	}
 }
 
-func (s *Storage) Get(key string) (string, bool) {
+func (s *Storage) Get(key string) (string, error) {
 	s.Lock()
 	defer s.Unlock()
 
 	link, ok := s.links[key]
-	return link.OriginalURL, ok
+
+	if !ok {
+		return "", ErrKeyNotFound
+	}
+
+	if link.IsDeleted {
+		return "", ErrKeyDeleted
+	}
+
+	return link.OriginalURL, nil
 }
 
 func (s *Storage) Add(link string, userID string) (string, error) {
@@ -76,4 +85,41 @@ func (s *Storage) GetUrlsByUser(id string) (map[string]string, error) {
 	}
 
 	return links, nil
+}
+
+func (s *Storage) DeleteUserUrls(userID string, keys []string) error {
+	s.Lock()
+	defer s.Unlock()
+
+	userLinks := s.users[userID]
+
+	for _, key := range keys {
+		link := s.links[key]
+		if link.UserID != userID {
+			continue
+		}
+
+		delete(s.links, key)
+		s.links[key] = Link{
+			ShortURL:    key,
+			OriginalURL: link.OriginalURL,
+			UserID:      link.UserID,
+			IsDeleted:   true,
+		}
+
+		for i, userLink := range userLinks {
+			if userLink.ShortURL == key {
+				userLinks[i] = Link{
+					ShortURL:    key,
+					OriginalURL: userLink.OriginalURL,
+					UserID:      userLink.UserID,
+					IsDeleted:   true,
+				}
+			}
+		}
+	}
+
+	s.users[userID] = userLinks
+
+	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 )
 
 func readLinksFromFile(file *os.File) (map[string]Link, map[string][]Link, error) {
@@ -31,10 +32,16 @@ func parseCSV(csvData [][]string) (map[string]Link, map[string][]Link, error) {
 			return nil, nil, fmt.Errorf("invalid row: %v", row)
 		}
 
+		isDeleted, err := strconv.ParseBool(row[3])
+		if err != nil {
+			continue
+		}
+
 		link := Link{
 			ShortURL:    row[0],
 			OriginalURL: row[1],
 			UserID:      row[2],
+			IsDeleted:   isDeleted,
 		}
 
 		links[row[0]] = link
@@ -61,8 +68,35 @@ func writeLinkToFile(fileStoragePath string, key string, link string, userID str
 
 	writer := csv.NewWriter(file)
 
-	if err := writer.Write([]string{key, link, userID}); err != nil {
+	if err := writer.Write([]string{key, link, userID, strconv.FormatBool(false)}); err != nil {
 		return fmt.Errorf("error writing to file: %v", err)
+	}
+
+	writer.Flush()
+
+	return nil
+}
+
+func writeLinksToFile(fileStoragePath string, links []Link) error {
+	file, err := os.OpenFile(fileStoragePath, os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+
+	defer func(f *os.File) {
+		err := f.Close()
+		if err != nil {
+			log.Printf("error closing file: %v", err)
+			return
+		}
+	}(file)
+
+	writer := csv.NewWriter(file)
+
+	for _, link := range links {
+		if err := writer.Write([]string{link.ShortURL, link.OriginalURL, link.UserID, strconv.FormatBool(link.IsDeleted)}); err != nil {
+			return fmt.Errorf("error writing to file: %v", err)
+		}
 	}
 
 	writer.Flush()
