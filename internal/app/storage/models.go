@@ -14,5 +14,5 @@ type Link struct {
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 	UserID      string `json:"-"`
-	IsDeleted   bool   `json:"is_deleted,default:false"`
+	IsDeleted   bool   `json:"is_deleted"`
 }
