@@ -39,11 +39,17 @@ func (s Server) SaveLinkHandler(c *gin.Context) {
 		return
 	}
 
+	userID, ok := c.MustGet("uuid").(string)
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
 	// add to storage
-	key, err := s.Storage.Add(urlString)
+	key, err := s.Storage.Add(urlString, userID)
 	if err != nil {
 		if err == storage.ErrKeyExists {
-			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": "Key already exists"})
+			c.String(http.StatusConflict, fmt.Sprintf("%s/%s", s.Cfg.BaseURL, key))
 			return
 		}
 

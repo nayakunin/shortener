@@ -21,9 +21,16 @@ func setupRouter(s Server) *gin.Engine {
 	})
 
 	r.Use(middleware.Gzip())
+	r.Use(middleware.Auth())
+
 	r.POST("/", s.SaveLinkHandler)
+	r.GET("/ping", s.pingHandler)
 	r.GET("/:id", s.GetLinkHandler)
-	r.POST("/api/shorten", s.ShortenHandler)
+
+	api := r.Group("/api")
+	api.POST("/shorten", s.ShortenHandler)
+	api.GET("/user/urls", s.GetUrlsByUserHandler)
+	api.POST("/shorten/batch", s.ShortenBatchHandler)
 	return r
 }
 

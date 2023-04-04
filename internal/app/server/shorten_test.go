@@ -27,7 +27,7 @@ func TestShorten(t *testing.T) {
 		name                string
 		requestBody         string
 		shouldCheckResponse bool
-		links               *map[string]string
+		links               []testutils.MockLink
 		want                want
 	}{
 		{
@@ -59,11 +59,16 @@ func TestShorten(t *testing.T) {
 		{
 			name:        "duplicate url",
 			requestBody: `{"url": "https://google.com"}`,
-			links: &map[string]string{
-				"link": "https://google.com",
+			links: []testutils.MockLink{
+				{
+					OriginalURL: "https://google.com",
+					ShortURL:    "link",
+				},
 			},
+			shouldCheckResponse: true,
 			want: want{
 				statusCode:  http.StatusConflict,
+				response:    fmt.Sprintf(`{"result":"%s/%s"}`, cfg.BaseURL, "link"),
 				contentType: "application/json; charset=utf-8",
 			},
 		},
@@ -73,7 +78,7 @@ func TestShorten(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testutils.NewMockStorage(tt.links)
 			router := gin.Default()
-			testutils.AddContext(router, cfg)
+			testutils.AddContext(router, cfg, "userID")
 			server := Server{
 				Storage: s,
 				Cfg:     cfg,

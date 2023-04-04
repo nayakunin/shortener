@@ -6,37 +6,79 @@ import (
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
-type MockStorage struct {
-	links map[string]string
+type MockLink struct {
+	ShortURL    string
+	OriginalURL string
+	UserID      string
 }
 
-func NewMockStorage(initialLinks *map[string]string) *MockStorage {
-	var links map[string]string
-	if initialLinks != nil {
-		links = *initialLinks
-	} else {
-		links = make(map[string]string)
+type MockStorage struct {
+	links map[string]MockLink
+	users map[string][]MockLink
+}
+
+func NewMockStorage(initialLinks []MockLink) *MockStorage {
+	links := make(map[string]MockLink)
+	users := make(map[string][]MockLink)
+
+	if len(initialLinks) > 0 {
+		for _, link := range initialLinks {
+			links[link.ShortURL] = link
+			users[link.UserID] = append(users[link.UserID], link)
+		}
 	}
 
 	return &MockStorage{
-		links,
+		links: links,
+		users: users,
 	}
 }
 
 func (s *MockStorage) Get(key string) (string, bool) {
 	link, ok := s.links[key]
-	return link, ok
+	return link.OriginalURL, ok
 }
 
-func (s *MockStorage) Add(link string) (string, error) {
+func (s *MockStorage) Add(link string, userID string) (string, error) {
 	key := "link"
 
 	if _, ok := s.links[key]; ok {
-		return "", storage.ErrKeyExists
+		return key, storage.ErrKeyExists
 	}
 
-	s.links[key] = link
+	linkObject := MockLink{
+		ShortURL:    key,
+		OriginalURL: link,
+		UserID:      userID,
+	}
+
+	s.links[key] = linkObject
+	s.users[userID] = append(s.users[userID], linkObject)
 	return key, nil
+}
+
+func (s *MockStorage) GetUrlsByUser(userID string) (map[string]string, error) {
+	links := make(map[string]string)
+	for _, link := range s.users[userID] {
+		links[link.ShortURL] = link.OriginalURL
+	}
+
+	return links, nil
+}
+
+func (s *MockStorage) AddBatch(batches []storage.BatchInput, userID string) ([]storage.BatchOutput, error) {
+	output := make([]storage.BatchOutput, len(batches))
+	for i, linkObject := range batches {
+		key, err := s.Add(linkObject.OriginalURL, userID)
+		if err != nil {
+			return nil, err
+		}
+		output[i] = storage.BatchOutput{
+			Key:           key,
+			CorrelationID: linkObject.CorrelationID,
+		}
+	}
+	return output, nil
 }
 
 func NewMockConfig() config.Config {
@@ -45,9 +87,10 @@ func NewMockConfig() config.Config {
 	}
 }
 
-func AddContext(r *gin.Engine, cfg config.Config) {
+func AddContext(r *gin.Engine, cfg config.Config, userID string) {
 	r.Use(func(c *gin.Context) {
 		c.Set("config", cfg)
+		c.Set("uuid", userID)
 		c.Next()
 	})
 }

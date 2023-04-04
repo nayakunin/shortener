@@ -7,36 +7,33 @@ import (
 )
 
 var ErrKeyExists = errors.New("key already exists")
+var ErrBatchInvalidURL = errors.New("invalid url")
 
 type Storager interface {
 	Get(key string) (string, bool)
-	Add(link string) (string, error)
-}
-
-func newStorage() Storage {
-	return Storage{
-		links: make(map[string]string),
-	}
-}
-
-func newFileStorage(fileStoragePath string) FileStorage {
-	return FileStorage{
-		Storage:         Storage{},
-		fileStoragePath: fileStoragePath,
-	}
+	Add(link string, userID string) (string, error)
+	AddBatch(batch []BatchInput, userID string) ([]BatchOutput, error)
+	GetUrlsByUser(userID string) (map[string]string, error)
 }
 
 func New(cfg config.Config) (Storager, error) {
-	if cfg.FileStoragePath == "" {
-		s := newStorage()
+	if cfg.DatabaseDSN != "" {
+		s, err := newDBStorage(cfg.DatabaseDSN)
+		if err != nil {
+			return nil, err
+		}
+		return s, nil
+	}
+
+	if cfg.FileStoragePath != "" {
+		s := newFileStorage(cfg.FileStoragePath)
+		err := s.restoreData()
+		if err != nil {
+			return nil, err
+		}
 		return &s, nil
 	}
 
-	s := newFileStorage(cfg.FileStoragePath)
-	err := s.restoreData()
-	if err != nil {
-		return nil, err
-	}
-
+	s := newStorage()
 	return &s, nil
 }

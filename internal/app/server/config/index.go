@@ -9,11 +9,13 @@ import (
 const defaultServerAddress = "localhost:8080"
 const defaultBaseURL = "http://localhost:8080"
 const defaultFilePath = ""
+const defaultDatabaseDSN = ""
 
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS"`
 	BaseURL         string `env:"BASE_URL"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+	DatabaseDSN     string `env:"DATABASE_DSN"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -27,6 +29,7 @@ func LoadConfig() (*Config, error) {
 	flag.StringVar(&flagsConfig.ServerAddress, "a", defaultServerAddress, "server address")
 	flag.StringVar(&flagsConfig.BaseURL, "b", defaultBaseURL, "base url")
 	flag.StringVar(&flagsConfig.FileStoragePath, "f", defaultFilePath, "file storage path")
+	flag.StringVar(&flagsConfig.DatabaseDSN, "d", defaultDatabaseDSN, "database dsn")
 	flag.Parse()
 
 	if config.ServerAddress == "" {
@@ -39,6 +42,10 @@ func LoadConfig() (*Config, error) {
 
 	if config.FileStoragePath == "" {
 		config.FileStoragePath = flagsConfig.FileStoragePath
+	}
+
+	if config.DatabaseDSN == "" {
+		config.DatabaseDSN = flagsConfig.DatabaseDSN
 	}
 
 	return &config, nil

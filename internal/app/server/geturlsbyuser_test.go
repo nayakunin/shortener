@@ -10,10 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetLink(t *testing.T) {
+func TestGetUrlsByUser(t *testing.T) {
 	type want struct {
 		statusCode  int
 		contentType string
+		body        string
 	}
 
 	tests := []struct {
@@ -25,24 +26,26 @@ func TestGetLink(t *testing.T) {
 	}{
 		{
 			name:    "not found",
-			request: "/link",
+			request: "/api/user/urls",
 			want: want{
-				statusCode:  http.StatusNotFound,
+				statusCode:  http.StatusNoContent,
 				contentType: "application/json; charset=utf-8",
 			},
 		},
 		{
 			name:    "success",
-			request: "/link",
+			request: "/api/user/urls",
 			links: []testutils.MockLink{
 				{
 					OriginalURL: "https://google.com",
 					ShortURL:    "link",
+					UserID:      "userID",
 				},
 			},
 			want: want{
-				statusCode:  http.StatusTemporaryRedirect,
-				contentType: "text/html; charset=utf-8",
+				statusCode:  http.StatusOK,
+				contentType: "application/json; charset=utf-8",
+				body:        "[{\"original_url\":\"https://google.com\",\"short_url\":\"http://localhost:8080/link\"}]",
 			},
 		},
 	}
@@ -57,7 +60,8 @@ func TestGetLink(t *testing.T) {
 			}
 
 			router := gin.Default()
-			router.GET("/:id", server.GetLinkHandler)
+			testutils.AddContext(router, cfg, "userID")
+			router.GET("/api/user/urls", server.GetUrlsByUserHandler)
 
 			request := httptest.NewRequest(http.MethodGet, tt.request, nil)
 			w := httptest.NewRecorder()
@@ -80,6 +84,9 @@ func TestGetLink(t *testing.T) {
 
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
 			assert.Equal(t, tt.want.contentType, res.Header.Get("Content-Type"))
+			if tt.want.body != "" {
+				assert.JSONEq(t, tt.want.body, w.Body.String())
+			}
 		})
 	}
 }
