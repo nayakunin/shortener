@@ -220,8 +220,6 @@ func (s *DBStorage) processDeleteRequests() {
 			return
 		}
 	}
-
-	return
 }
 
 func (rb *RequestBuffer) AddRequest(userID string, keys []string) {
@@ -244,7 +242,7 @@ func (rb *RequestBuffer) GetRequests() []RequestBatch {
 		case request := <-rb.buffer:
 			requests = append(requests, request)
 		default:
-			break
+			return requests
 		}
 	}
 
