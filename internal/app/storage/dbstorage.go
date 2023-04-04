@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nayakunin/shortener/internal/app/utils"
 )
 
@@ -26,7 +27,7 @@ type RequestBuffer struct {
 }
 
 type DBStorage struct {
-	Connection    *pgx.Conn
+	Pool          *pgxpool.Pool
 	requestBuffer *RequestBuffer
 }
 
@@ -39,7 +40,7 @@ func newRequestBuffer(maxRequests int) *RequestBuffer {
 	}
 }
 
-func initDB(conn *pgx.Conn) error {
+func initDB(conn *pgxpool.Conn) error {
 	_, err := conn.Exec(context.Background(), `CREATE TABLE IF NOT EXISTS links (
 		id SERIAL PRIMARY KEY,
 		key VARCHAR(255) NOT NULL,
@@ -55,7 +56,12 @@ func initDB(conn *pgx.Conn) error {
 }
 
 func newDBStorage(databaseURL string) (*DBStorage, error) {
-	conn, err := pgx.Connect(context.Background(), databaseURL)
+	pool, err := pgxpool.New(context.Background(), databaseURL)
+	if err != nil {
+		return nil, err
+	}
+
+	conn, err := pool.Acquire(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +72,7 @@ func newDBStorage(databaseURL string) (*DBStorage, error) {
 	}
 
 	db := DBStorage{
-		Connection:    conn,
+		Pool:          pool,
 		requestBuffer: newRequestBuffer(MaxRequests),
 	}
 
@@ -91,9 +97,15 @@ func (s *DBStorage) Get(key string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
+	conn, err := s.Pool.Acquire(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer conn.Release()
+
 	var originalURL string
 	var isDeleted bool
-	err := s.Connection.QueryRow(ctx, "SELECT original_url, is_deleted FROM links WHERE key = $1", key).Scan(&originalURL, &isDeleted)
+	err = conn.QueryRow(ctx, "SELECT original_url, is_deleted FROM links WHERE key = $1", key).Scan(&originalURL, &isDeleted)
 	if err != nil {
 		return "", err
 	}
@@ -111,14 +123,20 @@ func (s *DBStorage) Add(link string, userID string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
-	res, err := s.Connection.Exec(ctx, "INSERT INTO links (key, original_url, user_id) VALUES ($1, $2, $3) ON CONFLICT (original_url) DO NOTHING", key, link, userID)
+	conn, err := s.Pool.Acquire(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer conn.Release()
+
+	res, err := conn.Exec(ctx, "INSERT INTO links (key, original_url, user_id) VALUES ($1, $2, $3) ON CONFLICT (original_url) DO NOTHING", key, link, userID)
 	if err != nil {
 		return "", err
 	}
 
 	if res.RowsAffected() == 0 {
 		var prevKey string
-		err := s.Connection.QueryRow(ctx, "SELECT key FROM links WHERE original_url = $1", link).Scan(&prevKey)
+		err := conn.QueryRow(ctx, "SELECT key FROM links WHERE original_url = $1", link).Scan(&prevKey)
 		if err != nil {
 			return "", err
 		}
@@ -133,7 +151,7 @@ func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
-	tx, err := s.Connection.Begin(ctx)
+	tx, err := s.Pool.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -181,8 +199,14 @@ func (s *DBStorage) GetUrlsByUser(id string) (map[string]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
+	conn, err := s.Pool.Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
 	links := make(map[string]string)
-	err := s.Connection.QueryRow(ctx, "SELECT key, original_url FROM links WHERE user_id = $1", id).Scan(links)
+	err = conn.QueryRow(ctx, "SELECT key, original_url FROM links WHERE user_id = $1", id).Scan(links)
 	if err != nil {
 		return nil, err
 	}
@@ -203,10 +227,16 @@ func (s *DBStorage) processDeleteRequests() {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
+	conn, err := s.Pool.Acquire(ctx)
+	if err != nil {
+		return
+	}
+	defer conn.Release()
+
 	requests := s.requestBuffer.GetRequests()
 
 	for _, batch := range requests {
-		_, err := s.Connection.Exec(ctx, "UPDATE links SET is_deleted = TRUE WHERE user_id = $1 AND key = ANY($2)", batch.UserID, batch.Keys)
+		_, err := conn.Exec(ctx, "UPDATE links SET is_deleted = TRUE WHERE user_id = $1 AND key = ANY($2)", batch.UserID, batch.Keys)
 		if err != nil {
 			return
 		}

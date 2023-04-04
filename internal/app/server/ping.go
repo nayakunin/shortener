@@ -15,7 +15,7 @@ func (s Server) pingHandler(c *gin.Context) {
 		return
 	}
 
-	if err := dbStorage.Connection.Ping(context.Background()); err != nil {
+	if err := dbStorage.Pool.Ping(context.Background()); err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
