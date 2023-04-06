@@ -6,7 +6,11 @@ import (
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/pkg/errors"
 )
+
+var ErrBadCSVFormat = errors.New("bad csv format")
 
 func readLinksFromFile(file *os.File) (map[string]Link, map[string][]Link, error) {
 	reader := csv.NewReader(file)
@@ -28,13 +32,13 @@ func parseCSV(csvData [][]string) (map[string]Link, map[string][]Link, error) {
 	users := make(map[string][]Link)
 
 	for _, row := range csvData {
-		if len(row) != 3 {
-			return nil, nil, fmt.Errorf("invalid row: %v", row)
+		if len(row) != 4 {
+			return nil, nil, ErrBadCSVFormat
 		}
 
 		isDeleted, err := strconv.ParseBool(row[3])
 		if err != nil {
-			continue
+			return nil, nil, ErrBadCSVFormat
 		}
 
 		link := Link{
