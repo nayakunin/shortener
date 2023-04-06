@@ -99,7 +99,6 @@ func (s *Storage) DeleteUserUrls(userID string, keys []string) error {
 			continue
 		}
 
-		delete(s.links, key)
 		s.links[key] = Link{
 			ShortURL:    key,
 			OriginalURL: link.OriginalURL,

@@ -11,33 +11,10 @@ import (
 )
 
 const Timeout = 5 * time.Second
-const MaxRequests = 10
-const DeleteRequestsTimeout = 3 * time.Second
-
-type RequestBatch struct {
-	UserID string
-	Keys   []string
-}
-
-type RequestBuffer struct {
-	buffer      chan RequestBatch
-	maxRequests int
-	timer       *time.Timer
-	startChan   chan struct{}
-}
 
 type DBStorage struct {
 	Pool          *pgxpool.Pool
 	requestBuffer *RequestBuffer
-}
-
-func newRequestBuffer(maxRequests int) *RequestBuffer {
-	return &RequestBuffer{
-		buffer:      make(chan RequestBatch, maxRequests),
-		maxRequests: maxRequests,
-		timer:       time.NewTimer(DeleteRequestsTimeout),
-		startChan:   make(chan struct{}),
-	}
 }
 
 func initDB(conn *pgxpool.Conn) error {
@@ -76,21 +53,23 @@ func newDBStorage(databaseURL string) (*DBStorage, error) {
 		requestBuffer: newRequestBuffer(MaxRequests),
 	}
 
-	go func() {
-		for {
-			select {
-			case <-db.requestBuffer.timer.C:
-				db.requestBuffer.timer.Reset(DeleteRequestsTimeout)
-				db.processDeleteRequests()
-			case <-db.requestBuffer.startChan:
-				db.requestBuffer.timer.Reset(DeleteRequestsTimeout)
-				db.processDeleteRequests()
-			}
-		}
-	}()
+	go db.requestBufferWorker(context.Background())
 
 	return &db, nil
+}
 
+func (s *DBStorage) requestBufferWorker(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-s.requestBuffer.ticker.C:
+			s.processDeleteRequests()
+		case <-s.requestBuffer.isBufferFullCh:
+			s.requestBuffer.ticker.Reset(DeleteRequestsTimeout)
+			s.processDeleteRequests()
+		}
+	}
 }
 
 func (s *DBStorage) Get(key string) (string, error) {
@@ -241,31 +220,4 @@ func (s *DBStorage) processDeleteRequests() {
 			return
 		}
 	}
-}
-
-func (rb *RequestBuffer) AddRequest(userID string, keys []string) {
-	rb.buffer <- RequestBatch{
-		UserID: userID,
-		Keys:   keys,
-	}
-
-	if len(rb.buffer) == rb.maxRequests-1 {
-		rb.timer.Reset(DeleteRequestsTimeout)
-		rb.startChan <- struct{}{}
-	}
-}
-
-func (rb *RequestBuffer) GetRequests() []RequestBatch {
-	requests := make([]RequestBatch, 0, rb.maxRequests)
-
-	for i := 0; i < rb.maxRequests; i++ {
-		select {
-		case request := <-rb.buffer:
-			requests = append(requests, request)
-		default:
-			return requests
-		}
-	}
-
-	return requests
 }
