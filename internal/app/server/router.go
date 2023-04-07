@@ -23,14 +23,19 @@ func setupRouter(s Server) *gin.Engine {
 	r.Use(middleware.Gzip())
 	r.Use(middleware.Auth())
 
-	r.POST("/", s.SaveLinkHandler)
-	r.GET("/ping", s.pingHandler)
-	r.GET("/:id", s.GetLinkHandler)
+	{
+		r.POST("/", s.SaveLinkHandler)
+		r.GET("/ping", s.pingHandler)
+		r.GET("/:id", s.GetLinkHandler)
+	}
 
 	api := r.Group("/api")
-	api.POST("/shorten", s.ShortenHandler)
-	api.GET("/user/urls", s.GetUrlsByUserHandler)
-	api.POST("/shorten/batch", s.ShortenBatchHandler)
+	{
+		api.POST("/shorten", s.ShortenHandler)
+		api.POST("/shorten/batch", s.ShortenBatchHandler)
+		api.GET("/user/urls", s.GetUrlsByUserHandler)
+		api.DELETE("/user/urls", s.DeleteUserUrlsHandler)
+	}
 	return r
 }
 

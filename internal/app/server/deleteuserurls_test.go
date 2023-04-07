@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -10,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetLink(t *testing.T) {
+func TestDeleteUserUrls(t *testing.T) {
 	type want struct {
 		statusCode  int
 		contentType string
@@ -24,74 +25,44 @@ func TestGetLink(t *testing.T) {
 		want                want
 	}{
 		{
-			name:    "not found",
-			request: "/link",
+			name:    "return accepted",
+			request: "[]",
 			want: want{
-				statusCode:  http.StatusNotFound,
+				statusCode:  http.StatusAccepted,
 				contentType: "application/json; charset=utf-8",
 			},
 		},
 		{
-			name:    "gone",
-			request: "/link",
-			links: []testutils.MockLink{
-				{
-					OriginalURL: "https://google.com",
-					ShortURL:    "link",
-					IsDeleted:   true,
-				},
-			},
+			name:    "empty body",
+			request: "",
 			want: want{
-				statusCode:  http.StatusGone,
+				statusCode:  http.StatusBadRequest,
 				contentType: "application/json; charset=utf-8",
-			},
-		},
-		{
-			name:    "success",
-			request: "/link",
-			links: []testutils.MockLink{
-				{
-					OriginalURL: "https://google.com",
-					ShortURL:    "link",
-				},
-			},
-			want: want{
-				statusCode:  http.StatusTemporaryRedirect,
-				contentType: "text/html; charset=utf-8",
 			},
 		},
 	}
 
+	cfg := testutils.NewMockConfig()
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testutils.NewMockStorage(tt.links)
-			cfg := testutils.NewMockConfig()
+			router := gin.Default()
+			testutils.AddContext(router, cfg, "userID")
 			server := Server{
 				Storage: s,
 				Cfg:     cfg,
 			}
+			router.GET("/", server.DeleteUserUrlsHandler)
 
-			router := gin.Default()
-			router.GET("/:id", server.GetLinkHandler)
-
-			request := httptest.NewRequest(http.MethodGet, tt.request, nil)
 			w := httptest.NewRecorder()
+			body := strings.NewReader(tt.request)
+			request := httptest.NewRequest(http.MethodGet, "/", body)
 			router.ServeHTTP(w, request)
 
 			res := w.Result()
 
 			defer res.Body.Close()
-
-			if tt.shouldCheckLocation {
-				var link testutils.MockLink
-				for _, l := range tt.links {
-					if l.ShortURL == tt.request[1:] {
-						link = l
-						break
-					}
-				}
-				assert.Equal(t, link, res.Header.Get("Location"))
-			}
 
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)
 			assert.Equal(t, tt.want.contentType, res.Header.Get("Content-Type"))

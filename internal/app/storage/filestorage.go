@@ -23,12 +23,21 @@ func newFileStorage(fileStoragePath string) FileStorage {
 	}
 }
 
-func (s *FileStorage) Get(key string) (string, bool) {
+func (s *FileStorage) Get(key string) (string, error) {
 	s.Lock()
 	defer s.Unlock()
 
 	link, ok := s.links[key]
-	return link.OriginalURL, ok
+
+	if !ok {
+		return "", ErrKeyNotFound
+	}
+
+	if link.IsDeleted {
+		return "", ErrKeyDeleted
+	}
+
+	return link.OriginalURL, nil
 }
 
 func (s *FileStorage) Add(link string, userID string) (string, error) {
@@ -105,6 +114,51 @@ func (s *FileStorage) restoreData() error {
 
 	s.links = links
 	s.users = users
+
+	return nil
+}
+
+func (s *FileStorage) DeleteUserUrls(userID string, keys []string) error {
+	s.Lock()
+	defer s.Unlock()
+
+	userLinks := s.users[userID]
+
+	for _, key := range keys {
+		link := s.links[key]
+		if link.UserID != userID {
+			continue
+		}
+
+		s.links[key] = Link{
+			ShortURL:    key,
+			OriginalURL: link.OriginalURL,
+			UserID:      link.UserID,
+			IsDeleted:   true,
+		}
+
+		for i, userLink := range userLinks {
+			if userLink.ShortURL == key {
+				userLinks[i] = Link{
+					ShortURL:    key,
+					OriginalURL: userLink.OriginalURL,
+					UserID:      userLink.UserID,
+					IsDeleted:   true,
+				}
+			}
+		}
+	}
+
+	s.users[userID] = userLinks
+
+	links := make([]Link, 0, len(s.links))
+	for _, link := range s.links {
+		links = append(links, link)
+	}
+
+	if err := writeLinksToFile(s.fileStoragePath, links); err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -10,6 +10,7 @@ type MockLink struct {
 	ShortURL    string
 	OriginalURL string
 	UserID      string
+	IsDeleted   bool
 }
 
 type MockStorage struct {
@@ -34,9 +35,17 @@ func NewMockStorage(initialLinks []MockLink) *MockStorage {
 	}
 }
 
-func (s *MockStorage) Get(key string) (string, bool) {
+func (s *MockStorage) Get(key string) (string, error) {
 	link, ok := s.links[key]
-	return link.OriginalURL, ok
+	if !ok {
+		return "", storage.ErrKeyNotFound
+	}
+
+	if link.IsDeleted {
+		return "", storage.ErrKeyDeleted
+	}
+
+	return link.OriginalURL, nil
 }
 
 func (s *MockStorage) Add(link string, userID string) (string, error) {
@@ -79,6 +88,40 @@ func (s *MockStorage) AddBatch(batches []storage.BatchInput, userID string) ([]s
 		}
 	}
 	return output, nil
+}
+
+func (s *MockStorage) DeleteUserUrls(userID string, keys []string) error {
+	userLinks := s.users[userID]
+
+	for _, key := range keys {
+		link := s.links[key]
+		if link.UserID != userID {
+			continue
+		}
+
+		delete(s.links, key)
+		s.links[key] = MockLink{
+			ShortURL:    key,
+			OriginalURL: link.OriginalURL,
+			UserID:      link.UserID,
+			IsDeleted:   true,
+		}
+
+		for i, userLink := range userLinks {
+			if userLink.ShortURL == key {
+				userLinks[i] = MockLink{
+					ShortURL:    key,
+					OriginalURL: userLink.OriginalURL,
+					UserID:      userLink.UserID,
+					IsDeleted:   true,
+				}
+			}
+		}
+	}
+
+	s.users[userID] = userLinks
+
+	return nil
 }
 
 func NewMockConfig() config.Config {
