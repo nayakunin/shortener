@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/nayakunin/shortener/internal/app/server"
 	"github.com/nayakunin/shortener/internal/app/server/config"
 	storagePackage "github.com/nayakunin/shortener/internal/app/storage"
@@ -24,6 +25,7 @@ func main() {
 	}
 
 	r := server.NewRouter(*cfg, storage)
+	pprof.Register(r)
 
 	log.Fatal(r.Run(cfg.ServerAddress))
 }
