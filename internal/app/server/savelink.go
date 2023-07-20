@@ -10,6 +10,7 @@ import (
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
+// SaveLinkHandler handles POST /
 func (s Server) SaveLinkHandler(c *gin.Context) {
 	// read body
 	body, err := io.ReadAll(c.Request.Body)

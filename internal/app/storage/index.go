@@ -1,3 +1,4 @@
+// Package storage provides storage for links.
 package storage
 
 import (
@@ -6,11 +7,19 @@ import (
 	"github.com/nayakunin/shortener/internal/app/server/config"
 )
 
+// ErrKeyExists is returned when key already exists
 var ErrKeyExists = errors.New("key already exists")
+
+// ErrBatchInvalidURL is returned when url is invalid
 var ErrBatchInvalidURL = errors.New("invalid url")
+
+// ErrKeyDeleted is returned when key is deleted
 var ErrKeyDeleted = errors.New("key deleted")
+
+// ErrKeyNotFound is returned when key is not found
 var ErrKeyNotFound = errors.New("key not found")
 
+// Storager is an interface for storage
 type Storager interface {
 	Get(key string) (string, error)
 	Add(link string, userID string) (string, error)
@@ -19,6 +28,7 @@ type Storager interface {
 	DeleteUserUrls(userID string, keys []string) error
 }
 
+// New returns new storage
 func New(cfg config.Config) (Storager, error) {
 	if cfg.DatabaseDSN != "" {
 		s, err := newDBStorage(cfg.DatabaseDSN)

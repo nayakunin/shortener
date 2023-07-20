@@ -8,6 +8,7 @@ import (
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
+// GetUrlsByUserHandler handles GET /urls
 func (s Server) GetUrlsByUserHandler(c *gin.Context) {
 	userID, ok := c.MustGet("uuid").(string)
 	if !ok {

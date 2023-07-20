@@ -1,3 +1,4 @@
+// Package config provides configuration for the server.
 package config
 
 import (
@@ -11,6 +12,7 @@ const defaultBaseURL = "http://localhost:8080"
 const defaultFilePath = ""
 const defaultDatabaseDSN = ""
 
+// Config contains configuration for the server.
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS"`
 	BaseURL         string `env:"BASE_URL"`
@@ -18,6 +20,7 @@ type Config struct {
 	DatabaseDSN     string `env:"DATABASE_DSN"`
 }
 
+// LoadConfig loads configuration from environment variables.
 func LoadConfig() (*Config, error) {
 	var config Config
 	err := env.Parse(&config)

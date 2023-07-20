@@ -1,3 +1,4 @@
+// Package server provides server for the application.
 package server
 
 import (
@@ -7,6 +8,7 @@ import (
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
+// Server is a server for the application.
 type Server struct {
 	Cfg     config.Config
 	Storage storage.Storager
@@ -39,6 +41,7 @@ func setupRouter(s Server) *gin.Engine {
 	return r
 }
 
+// NewRouter returns a new router for the application
 func NewRouter(cfg config.Config, s storage.Storager) *gin.Engine {
 	return setupRouter(Server{
 		Cfg:     cfg,

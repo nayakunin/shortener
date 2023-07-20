@@ -11,14 +11,17 @@ import (
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
+// ShortenRequest request structure for POST /shorten
 type ShortenRequest struct {
 	URL string `json:"url"`
 }
 
+// ShortenResponse response structure for POST /shorten
 type ShortenResponse struct {
 	Result string `json:"result"`
 }
 
+// ShortenHandler handles POST /shorten
 func (s Server) ShortenHandler(c *gin.Context) {
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {

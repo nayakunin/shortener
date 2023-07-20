@@ -15,14 +15,17 @@ type gzipWriter struct {
 	writer *gzip.Writer
 }
 
+// Write implements io.Writer
 func (w gzipWriter) Write(b []byte) (int, error) {
 	return w.writer.Write(b)
 }
 
+// WriteString implements io.StringWriter
 func (w gzipWriter) WriteString(s string) (int, error) {
 	return w.writer.Write([]byte(s))
 }
 
+// Gzip is a middleware that compresses HTTP response using gzip compression
 func Gzip() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if strings.Contains(c.Request.Header.Get("Content-Encoding"), "gzip") {

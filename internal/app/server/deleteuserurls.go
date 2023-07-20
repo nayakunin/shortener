@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// DeleteUserUrlsHandler deletes urls from user's storage.
 func (s Server) DeleteUserUrlsHandler(c *gin.Context) {
 	userID, ok := c.MustGet("uuid").(string)
 	if !ok {

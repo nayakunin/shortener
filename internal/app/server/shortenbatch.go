@@ -11,16 +11,19 @@ import (
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
+// ShortenBatchInput request structure for POST /shorten
 type ShortenBatchInput struct {
 	CorrelationID string `json:"correlation_id"`
 	OriginalURL   string `json:"original_url"`
 }
 
+// ShortenBatchOutput response structure for POST /shorten
 type ShortenBatchOutput struct {
 	CorrelationID string `json:"correlation_id"`
 	ShortURL      string `json:"short_url"`
 }
 
+// ShortenBatchHandler handles POST /shorten
 func (s Server) ShortenBatchHandler(c *gin.Context) {
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {

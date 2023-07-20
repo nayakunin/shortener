@@ -1,3 +1,4 @@
+// Package utils provides utility functions for the application.
 package utils
 
 import (
@@ -5,6 +6,7 @@ import (
 	"encoding/base64"
 )
 
+// Encode encodes the input string to a random 8-character string.
 func Encode(input string) string {
 	// Generate a random 6-byte sequence
 	randBytes := make([]byte, 6)

@@ -23,6 +23,7 @@ func newFileStorage(fileStoragePath string) FileStorage {
 	}
 }
 
+// Get returns original url by key
 func (s *FileStorage) Get(key string) (string, error) {
 	s.Lock()
 	defer s.Unlock()
@@ -40,6 +41,7 @@ func (s *FileStorage) Get(key string) (string, error) {
 	return link.OriginalURL, nil
 }
 
+// Add adds new link to storage
 func (s *FileStorage) Add(link string, userID string) (string, error) {
 	key := utils.Encode(link)
 
@@ -65,6 +67,7 @@ func (s *FileStorage) Add(link string, userID string) (string, error) {
 	return key, nil
 }
 
+// AddBatch adds new links to storage
 func (s *FileStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput, error) {
 	output := make([]BatchOutput, len(batches))
 	for i, linkObject := range batches {
@@ -81,6 +84,7 @@ func (s *FileStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutp
 	return output, nil
 }
 
+// GetUrlsByUser returns all user's URLs
 func (s *FileStorage) GetUrlsByUser(id string) (map[string]string, error) {
 	s.Lock()
 	defer s.Unlock()
@@ -118,6 +122,7 @@ func (s *FileStorage) restoreData() error {
 	return nil
 }
 
+// DeleteUserUrls deletes user's URLs
 func (s *FileStorage) DeleteUserUrls(userID string, keys []string) error {
 	s.Lock()
 	defer s.Unlock()
