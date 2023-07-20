@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Storage is a storage
 type Storage struct {
 	sync.Mutex
 	links map[string]Link

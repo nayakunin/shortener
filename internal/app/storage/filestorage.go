@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// FileStorage is a storage that stores data in files
 type FileStorage struct {
 	Storage
 	fileStoragePath string

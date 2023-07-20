@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// Errors
 var (
 	// ErrInvalidCookieFormat is returned when cookie has invalid format.
 	ErrInvalidCookieFormat = errors.New("invalid cookie format")

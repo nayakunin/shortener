@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ErrBadCSVFormat is an error that is returned when csv file has bad format
 var ErrBadCSVFormat = errors.New("bad csv format")
 
 func readLinksFromFile(file *os.File) (map[string]Link, map[string][]Link, error) {
