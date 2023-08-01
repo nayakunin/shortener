@@ -11,6 +11,7 @@ const defaultServerAddress = "localhost:8080"
 const defaultBaseURL = "http://localhost:8080"
 const defaultFilePath = ""
 const defaultDatabaseDSN = ""
+const defaultAuthSecret = "secret"
 
 // Config contains configuration for the server.
 type Config struct {
@@ -18,6 +19,7 @@ type Config struct {
 	BaseURL         string `env:"BASE_URL"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 	DatabaseDSN     string `env:"DATABASE_DSN"`
+	AuthSecret      string
 }
 
 // LoadConfig loads configuration from environment variables.
@@ -49,6 +51,10 @@ func LoadConfig() (*Config, error) {
 
 	if config.DatabaseDSN == "" {
 		config.DatabaseDSN = flagsConfig.DatabaseDSN
+	}
+
+	if config.AuthSecret == "" {
+		config.AuthSecret = defaultAuthSecret
 	}
 
 	return &config, nil

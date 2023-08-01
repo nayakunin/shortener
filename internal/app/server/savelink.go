@@ -11,6 +11,7 @@ import (
 )
 
 // SaveLinkHandler handles POST /
+// Request body contains url to save
 func (s Server) SaveLinkHandler(c *gin.Context) {
 	// read body
 	body, err := io.ReadAll(c.Request.Body)

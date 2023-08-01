@@ -8,6 +8,7 @@ import (
 	"net/url"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/interfaces"
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
@@ -24,6 +25,7 @@ type ShortenBatchOutput struct {
 }
 
 // ShortenBatchHandler handles POST /shorten
+// Body ShortenBatchInput
 func (s Server) ShortenBatchHandler(c *gin.Context) {
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
@@ -49,7 +51,7 @@ func (s Server) ShortenBatchHandler(c *gin.Context) {
 		return
 	}
 
-	input := make([]storage.BatchInput, len(req))
+	input := make([]interfaces.BatchInput, len(req))
 	for i, v := range req {
 		_, err = url.ParseRequestURI(v.OriginalURL)
 		if err != nil {
@@ -57,7 +59,7 @@ func (s Server) ShortenBatchHandler(c *gin.Context) {
 			return
 		}
 
-		input[i] = storage.BatchInput{
+		input[i] = interfaces.BatchInput{
 			CorrelationID: v.CorrelationID,
 			OriginalURL:   v.OriginalURL,
 		}

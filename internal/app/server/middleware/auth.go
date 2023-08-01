@@ -55,7 +55,7 @@ func decodeCookie(encoded, secretKey string) (string, error) {
 }
 
 // Auth is a middleware that checks if user is authenticated.
-func Auth() gin.HandlerFunc {
+func Auth(secret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cookie, err := c.Cookie("auth")
 		var value string

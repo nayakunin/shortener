@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/interfaces"
 	"github.com/nayakunin/shortener/internal/app/server/config"
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
@@ -14,14 +15,14 @@ type MockLink struct {
 	IsDeleted   bool
 }
 
-// MockStorage is a mock for storage.Storage
+// MockStorage is a mock struct for interfaces.Storage
 type MockStorage struct {
 	links map[string]MockLink
 	users map[string][]MockLink
 }
 
 // NewMockStorage creates a new mock storage
-func NewMockStorage(initialLinks []MockLink) *MockStorage {
+func NewMockStorage(initialLinks []MockLink) interfaces.Storage {
 	links := make(map[string]MockLink)
 	users := make(map[string][]MockLink)
 
@@ -71,7 +72,7 @@ func (s *MockStorage) Add(link string, userID string) (string, error) {
 	return key, nil
 }
 
-// GetUrlsByUser implements storage.Storager
+// GetUrlsByUser implements interfaces.Storage
 func (s *MockStorage) GetUrlsByUser(userID string) (map[string]string, error) {
 	links := make(map[string]string)
 	for _, link := range s.users[userID] {
@@ -81,15 +82,15 @@ func (s *MockStorage) GetUrlsByUser(userID string) (map[string]string, error) {
 	return links, nil
 }
 
-// GetUrls implements storage.Storager
-func (s *MockStorage) AddBatch(batches []storage.BatchInput, userID string) ([]storage.BatchOutput, error) {
-	output := make([]storage.BatchOutput, len(batches))
+// AddBatch implements interfaces.Storage
+func (s *MockStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error) {
+	output := make([]interfaces.BatchOutput, len(batches))
 	for i, linkObject := range batches {
 		key, err := s.Add(linkObject.OriginalURL, userID)
 		if err != nil {
 			return nil, err
 		}
-		output[i] = storage.BatchOutput{
+		output[i] = interfaces.BatchOutput{
 			Key:           key,
 			CorrelationID: linkObject.CorrelationID,
 		}
@@ -97,7 +98,7 @@ func (s *MockStorage) AddBatch(batches []storage.BatchInput, userID string) ([]s
 	return output, nil
 }
 
-// DeleteUserUrls implements storage.Storager
+// DeleteUserUrls implements interfaces.Storage
 func (s *MockStorage) DeleteUserUrls(userID string, keys []string) error {
 	userLinks := s.users[userID]
 

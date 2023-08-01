@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nayakunin/shortener/internal/app/interfaces"
 	"github.com/nayakunin/shortener/internal/app/utils"
 )
 
@@ -131,7 +132,7 @@ func (s *DBStorage) Add(link string, userID string) (string, error) {
 }
 
 // AddBatch adds new links to storage
-func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput, error) {
+func (s *DBStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
@@ -152,7 +153,7 @@ func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput
 		return nil, err
 	}
 
-	output := make([]BatchOutput, len(batches))
+	output := make([]interfaces.BatchOutput, len(batches))
 	for i, linkObject := range batches {
 		if _, err := url.ParseRequestURI(linkObject.OriginalURL); err != nil {
 			return nil, ErrBatchInvalidURL
@@ -165,7 +166,7 @@ func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput
 			return nil, err
 		}
 
-		output[i] = BatchOutput{
+		output[i] = interfaces.BatchOutput{
 			Key:           key,
 			CorrelationID: linkObject.CorrelationID,
 		}
@@ -179,7 +180,7 @@ func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput
 	return output, nil
 }
 
-// GetUrlsByUser returns all user's URLs
+// GetUrlsByUser returns all user's URLs that are not deleted
 func (s *DBStorage) GetUrlsByUser(id string) (map[string]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()

@@ -2,6 +2,7 @@
 package storage
 
 import (
+	"github.com/nayakunin/shortener/internal/app/interfaces"
 	"github.com/pkg/errors"
 
 	"github.com/nayakunin/shortener/internal/app/server/config"
@@ -23,7 +24,7 @@ var ErrKeyNotFound = errors.New("key not found")
 type Storager interface {
 	Get(key string) (string, error)
 	Add(link string, userID string) (string, error)
-	AddBatch(batch []BatchInput, userID string) ([]BatchOutput, error)
+	AddBatch(batch []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error)
 	GetUrlsByUser(userID string) (map[string]string, error)
 	DeleteUserUrls(userID string, keys []string) error
 }

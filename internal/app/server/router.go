@@ -3,15 +3,15 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/interfaces"
 	"github.com/nayakunin/shortener/internal/app/server/config"
 	"github.com/nayakunin/shortener/internal/app/server/middleware"
-	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
-// Server is a server for the application.
+// Server is a struct of the server.
 type Server struct {
 	Cfg     config.Config
-	Storage storage.Storager
+	Storage interfaces.Storage
 }
 
 func setupRouter(s Server) *gin.Engine {
@@ -23,7 +23,7 @@ func setupRouter(s Server) *gin.Engine {
 	})
 
 	r.Use(middleware.Gzip())
-	r.Use(middleware.Auth())
+	r.Use(middleware.Auth(s.Cfg.AuthSecret))
 
 	{
 		r.POST("/", s.SaveLinkHandler)
@@ -42,7 +42,7 @@ func setupRouter(s Server) *gin.Engine {
 }
 
 // NewRouter returns a new router for the application
-func NewRouter(cfg config.Config, s storage.Storager) *gin.Engine {
+func NewRouter(cfg config.Config, s interfaces.Storage) *gin.Engine {
 	return setupRouter(Server{
 		Cfg:     cfg,
 		Storage: s,

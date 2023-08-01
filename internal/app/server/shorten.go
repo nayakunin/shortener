@@ -22,6 +22,7 @@ type ShortenResponse struct {
 }
 
 // ShortenHandler handles POST /shorten
+// Body ShortenRequest
 func (s Server) ShortenHandler(c *gin.Context) {
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
