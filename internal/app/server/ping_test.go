@@ -23,6 +23,7 @@ func TestPing(t *testing.T) {
 	req := httptest.NewRequest("GET", "/ping", nil)
 	router.ServeHTTP(w, req)
 	res := w.Result()
+	defer res.Body.Close()
 
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 }
