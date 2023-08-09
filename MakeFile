@@ -1,0 +1,15 @@
+.PHONY: build run clean all
+
+build:
+	@echo "Building staticlint..."
+	go build -o staticlint ./cmd/staticlint
+
+run: build
+	@echo "Running staticlint with go vet..."
+	-go vet -vettool=./staticlint ./cmd/shortener/... ./internal/...
+
+clean:
+	@echo "Cleaning up..."
+	rm -f staticlint
+
+all: run clean
