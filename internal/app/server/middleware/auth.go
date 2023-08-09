@@ -1,3 +1,4 @@
+// Package middleware provides middleware for the server.
 package middleware
 
 import (
@@ -13,8 +14,11 @@ import (
 	"github.com/google/uuid"
 )
 
+// Errors
 var (
-	ErrInvalidCookieFormat    = errors.New("invalid cookie format")
+	// ErrInvalidCookieFormat is returned when cookie has invalid format.
+	ErrInvalidCookieFormat = errors.New("invalid cookie format")
+	// ErrInvalidCookieSignature is returned when cookie has invalid signature.
 	ErrInvalidCookieSignature = errors.New("invalid cookie signature")
 )
 
@@ -50,7 +54,8 @@ func decodeCookie(encoded, secretKey string) (string, error) {
 	return value, nil
 }
 
-func Auth() gin.HandlerFunc {
+// Auth is a middleware that checks if user is authenticated.
+func Auth(secret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cookie, err := c.Cookie("auth")
 		var value string

@@ -2,10 +2,12 @@ package testutils
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/interfaces"
 	"github.com/nayakunin/shortener/internal/app/server/config"
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
+// MockLink is a mock for storage.Link
 type MockLink struct {
 	ShortURL    string
 	OriginalURL string
@@ -13,12 +15,14 @@ type MockLink struct {
 	IsDeleted   bool
 }
 
+// MockStorage is a mock struct for interfaces.Storage
 type MockStorage struct {
 	links map[string]MockLink
 	users map[string][]MockLink
 }
 
-func NewMockStorage(initialLinks []MockLink) *MockStorage {
+// NewMockStorage creates a new mock storage
+func NewMockStorage(initialLinks []MockLink) interfaces.Storage {
 	links := make(map[string]MockLink)
 	users := make(map[string][]MockLink)
 
@@ -35,6 +39,7 @@ func NewMockStorage(initialLinks []MockLink) *MockStorage {
 	}
 }
 
+// Get implements storage.Storager
 func (s *MockStorage) Get(key string) (string, error) {
 	link, ok := s.links[key]
 	if !ok {
@@ -48,6 +53,7 @@ func (s *MockStorage) Get(key string) (string, error) {
 	return link.OriginalURL, nil
 }
 
+// Add implements storage.Storager
 func (s *MockStorage) Add(link string, userID string) (string, error) {
 	key := "link"
 
@@ -66,6 +72,7 @@ func (s *MockStorage) Add(link string, userID string) (string, error) {
 	return key, nil
 }
 
+// GetUrlsByUser implements interfaces.Storage
 func (s *MockStorage) GetUrlsByUser(userID string) (map[string]string, error) {
 	links := make(map[string]string)
 	for _, link := range s.users[userID] {
@@ -75,14 +82,15 @@ func (s *MockStorage) GetUrlsByUser(userID string) (map[string]string, error) {
 	return links, nil
 }
 
-func (s *MockStorage) AddBatch(batches []storage.BatchInput, userID string) ([]storage.BatchOutput, error) {
-	output := make([]storage.BatchOutput, len(batches))
+// AddBatch implements interfaces.Storage
+func (s *MockStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error) {
+	output := make([]interfaces.BatchOutput, len(batches))
 	for i, linkObject := range batches {
 		key, err := s.Add(linkObject.OriginalURL, userID)
 		if err != nil {
 			return nil, err
 		}
-		output[i] = storage.BatchOutput{
+		output[i] = interfaces.BatchOutput{
 			Key:           key,
 			CorrelationID: linkObject.CorrelationID,
 		}
@@ -90,6 +98,7 @@ func (s *MockStorage) AddBatch(batches []storage.BatchInput, userID string) ([]s
 	return output, nil
 }
 
+// DeleteUserUrls implements interfaces.Storage
 func (s *MockStorage) DeleteUserUrls(userID string, keys []string) error {
 	userLinks := s.users[userID]
 
@@ -124,12 +133,14 @@ func (s *MockStorage) DeleteUserUrls(userID string, keys []string) error {
 	return nil
 }
 
+// NewMockConfig creates a new mock config
 func NewMockConfig() config.Config {
 	return config.Config{
 		BaseURL: "http://localhost:8080",
 	}
 }
 
+// AddContext adds config and uuid to gin context
 func AddContext(r *gin.Engine, cfg config.Config, userID string) {
 	r.Use(func(c *gin.Context) {
 		c.Set("config", cfg)

@@ -4,15 +4,22 @@ import (
 	"time"
 )
 
+// MaxRequests is the maximum number of requests that can be sent to the database at a time.
 const MaxRequests = 10
+
+// MaxKeysInRequest is the maximum number of keys that can be sent to the database at a time.
 const MaxKeysInRequest = 10
+
+// DeleteRequestsTimeout is the maximum time to wait for a request to be sent to the database.
 const DeleteRequestsTimeout = 3 * time.Second
 
+// RequestBatch is a batch of requests to the database.
 type RequestBatch struct {
 	UserID string
 	Keys   []string
 }
 
+// RequestBuffer is a buffer for requests to the database.
 type RequestBuffer struct {
 	buffer         chan RequestBatch
 	maxRequests    int
@@ -29,6 +36,7 @@ func newRequestBuffer(maxRequests int) *RequestBuffer {
 	}
 }
 
+// AddRequest adds a request to the buffer
 func (rb *RequestBuffer) AddRequest(userID string, keys []string) {
 	slicedKeys := make([][]string, 0, len(keys)/MaxKeysInRequest+1)
 
@@ -53,6 +61,7 @@ func (rb *RequestBuffer) AddRequest(userID string, keys []string) {
 	}
 }
 
+// GetRequests returns a slice of requests from the buffer
 func (rb *RequestBuffer) GetRequests() []RequestBatch {
 	requests := make([]RequestBatch, 0, rb.maxRequests)
 

@@ -5,9 +5,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nayakunin/shortener/internal/app/storage"
+	"github.com/nayakunin/shortener/internal/app/interfaces"
 )
 
+// GetUrlsByUserHandler handles GET /urls
 func (s Server) GetUrlsByUserHandler(c *gin.Context) {
 	userID, ok := c.MustGet("uuid").(string)
 	if !ok {
@@ -26,9 +27,9 @@ func (s Server) GetUrlsByUserHandler(c *gin.Context) {
 		return
 	}
 
-	response := make([]storage.Link, 0, len(urls))
+	response := make([]interfaces.Link, 0, len(urls))
 	for shortURL, originalURL := range urls {
-		response = append(response, storage.Link{
+		response = append(response, interfaces.Link{
 			ShortURL:    fmt.Sprintf("%s/%s", s.Cfg.BaseURL, shortURL),
 			OriginalURL: originalURL,
 		})

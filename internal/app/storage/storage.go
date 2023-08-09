@@ -3,23 +3,26 @@ package storage
 import (
 	"sync"
 
+	"github.com/nayakunin/shortener/internal/app/interfaces"
 	"github.com/nayakunin/shortener/internal/app/utils"
 	"github.com/pkg/errors"
 )
 
+// Storage is an in-memory storage
 type Storage struct {
 	sync.Mutex
-	links map[string]Link
-	users map[string][]Link
+	links map[string]interfaces.Link
+	users map[string][]interfaces.Link
 }
 
 func newStorage() Storage {
 	return Storage{
-		links: make(map[string]Link),
-		users: make(map[string][]Link),
+		links: make(map[string]interfaces.Link),
+		users: make(map[string][]interfaces.Link),
 	}
 }
 
+// Get returns original url by key
 func (s *Storage) Get(key string) (string, error) {
 	s.Lock()
 	defer s.Unlock()
@@ -37,6 +40,7 @@ func (s *Storage) Get(key string) (string, error) {
 	return link.OriginalURL, nil
 }
 
+// Add adds new link to storage
 func (s *Storage) Add(link string, userID string) (string, error) {
 	key := utils.Encode(link)
 
@@ -47,7 +51,7 @@ func (s *Storage) Add(link string, userID string) (string, error) {
 		return key, ErrKeyExists
 	}
 
-	linkObject := Link{
+	linkObject := interfaces.Link{
 		ShortURL:    key,
 		OriginalURL: link,
 		UserID:      userID,
@@ -59,14 +63,15 @@ func (s *Storage) Add(link string, userID string) (string, error) {
 	return key, nil
 }
 
-func (s *Storage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput, error) {
-	output := make([]BatchOutput, len(batches))
+// AddBatch adds new links to storage
+func (s *Storage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error) {
+	output := make([]interfaces.BatchOutput, len(batches))
 	for i, linkObject := range batches {
 		key, err := s.Add(linkObject.OriginalURL, userID)
 		if err != nil && !errors.Is(err, ErrKeyExists) {
 			return nil, err
 		}
-		output[i] = BatchOutput{
+		output[i] = interfaces.BatchOutput{
 			Key:           key,
 			CorrelationID: linkObject.CorrelationID,
 		}
@@ -75,6 +80,7 @@ func (s *Storage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput, 
 	return output, nil
 }
 
+// GetUrlsByUser returns all urls by user id
 func (s *Storage) GetUrlsByUser(id string) (map[string]string, error) {
 	s.Lock()
 	defer s.Unlock()
@@ -87,6 +93,7 @@ func (s *Storage) GetUrlsByUser(id string) (map[string]string, error) {
 	return links, nil
 }
 
+// DeleteUserUrls deletes user's urls
 func (s *Storage) DeleteUserUrls(userID string, keys []string) error {
 	s.Lock()
 	defer s.Unlock()
@@ -99,7 +106,7 @@ func (s *Storage) DeleteUserUrls(userID string, keys []string) error {
 			continue
 		}
 
-		s.links[key] = Link{
+		s.links[key] = interfaces.Link{
 			ShortURL:    key,
 			OriginalURL: link.OriginalURL,
 			UserID:      link.UserID,
@@ -108,7 +115,7 @@ func (s *Storage) DeleteUserUrls(userID string, keys []string) error {
 
 		for i, userLink := range userLinks {
 			if userLink.ShortURL == key {
-				userLinks[i] = Link{
+				userLinks[i] = interfaces.Link{
 					ShortURL:    key,
 					OriginalURL: userLink.OriginalURL,
 					UserID:      userLink.UserID,

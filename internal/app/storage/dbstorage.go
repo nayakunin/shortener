@@ -7,11 +7,14 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nayakunin/shortener/internal/app/interfaces"
 	"github.com/nayakunin/shortener/internal/app/utils"
 )
 
+// Timeout is a timeout for all db operations
 const Timeout = 5 * time.Second
 
+// DBStorage is a storage based on PostgreSQL
 type DBStorage struct {
 	Pool          *pgxpool.Pool
 	requestBuffer *RequestBuffer
@@ -72,6 +75,7 @@ func (s *DBStorage) requestBufferWorker(ctx context.Context) {
 	}
 }
 
+// Get returns original URL by key
 func (s *DBStorage) Get(key string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
@@ -96,6 +100,7 @@ func (s *DBStorage) Get(key string) (string, error) {
 	return originalURL, nil
 }
 
+// Add adds new link to storage
 func (s *DBStorage) Add(link string, userID string) (string, error) {
 	key := utils.Encode(link)
 
@@ -126,7 +131,8 @@ func (s *DBStorage) Add(link string, userID string) (string, error) {
 	return key, nil
 }
 
-func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput, error) {
+// AddBatch adds new links to storage
+func (s *DBStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
@@ -147,7 +153,7 @@ func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput
 		return nil, err
 	}
 
-	output := make([]BatchOutput, len(batches))
+	output := make([]interfaces.BatchOutput, len(batches))
 	for i, linkObject := range batches {
 		if _, err := url.ParseRequestURI(linkObject.OriginalURL); err != nil {
 			return nil, ErrBatchInvalidURL
@@ -160,7 +166,7 @@ func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput
 			return nil, err
 		}
 
-		output[i] = BatchOutput{
+		output[i] = interfaces.BatchOutput{
 			Key:           key,
 			CorrelationID: linkObject.CorrelationID,
 		}
@@ -174,6 +180,7 @@ func (s *DBStorage) AddBatch(batches []BatchInput, userID string) ([]BatchOutput
 	return output, nil
 }
 
+// GetUrlsByUser returns all user's URLs that are not deleted
 func (s *DBStorage) GetUrlsByUser(id string) (map[string]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
@@ -193,6 +200,7 @@ func (s *DBStorage) GetUrlsByUser(id string) (map[string]string, error) {
 	return links, nil
 }
 
+// DeleteUserUrls deletes all user's URLs
 func (s *DBStorage) DeleteUserUrls(userID string, keys []string) error {
 	s.requestBuffer.AddRequest(userID, keys)
 	return nil

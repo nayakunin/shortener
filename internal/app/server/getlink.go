@@ -10,6 +10,7 @@ import (
 
 const paramID = "id"
 
+// GetLinkHandler handles GET /:id. Id is a short link.
 func (s Server) GetLinkHandler(c *gin.Context) {
 	id := c.Param(paramID)
 
