@@ -13,12 +13,13 @@ import (
 )
 
 var (
+	// BuildVersion is a version of the build
 	BuildVersion string
-	BuildTime    string
-	BuildCommit  string
+	// BuildTime is a time of the build
+	BuildTime string
+	// BuildCommit is a git commit of the build
+	BuildCommit string
 )
-
-const NA = "N/A"
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
@@ -29,15 +30,15 @@ func main() {
 	}
 
 	if BuildVersion == "" {
-		BuildVersion = NA
+		BuildVersion = "N/A"
 	}
 
 	if BuildTime == "" {
-		BuildTime = NA
+		BuildTime = "N/A"
 	}
 
 	if BuildCommit == "" {
-		BuildCommit = NA
+		BuildCommit = "N/A"
 	}
 
 	fmt.Printf("Build Version: %s\n", BuildVersion)
