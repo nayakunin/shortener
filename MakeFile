@@ -1,15 +1,20 @@
-.PHONY: build run clean all
+.PHONY: build-linter run-linter clean-linter lint run
 
-build:
+build-linter:
 	@echo "Building staticlint..."
 	go build -o staticlint ./cmd/staticlint
 
-run: build
+run-linter: build-linter
 	@echo "Running staticlint with go vet..."
 	-go vet -vettool=./staticlint ./cmd/shortener/... ./internal/...
 
-clean:
+clean-linter:
 	@echo "Cleaning up..."
 	rm -f staticlint
 
-all: run clean
+lint: run-linter clean-linter
+
+run:
+	@echo "Running shortener..."
+	-go run -ldflags "-X main.BuildVersion=v1 -X 'main.BuildTime=$$(date +'%Y/%m/%d %H:%M:%S')' -X 'main.BuildCommit=$$(git rev-parse HEAD)'" ./cmd/shortener -d "postgresql://localhost:5432/postgres?sslmode=disable"
+
