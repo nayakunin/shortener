@@ -12,6 +12,7 @@ import (
 	storagePackage "github.com/nayakunin/shortener/internal/app/storage"
 )
 
+// Build information. Populated at build-time.
 var (
 	// BuildVersion is a version of the build
 	BuildVersion string
