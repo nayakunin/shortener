@@ -46,7 +46,7 @@ func main() {
 	fmt.Printf("Build Time: %s\n", BuildTime)
 	fmt.Printf("Build Commit: %s\n", BuildCommit)
 
-	storage, err := storagePackage.New(*cfg)
+	storage, err := storagePackage.NewStorage(*cfg)
 	if err != nil {
 		log.Fatal(err)
 	}

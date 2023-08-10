@@ -8,6 +8,13 @@ import (
 )
 
 func TestStorage(t *testing.T) {
+	t.Run("newStorage", func(t *testing.T) {
+		res := newStorage()
+		assert.Equal(t, &Storage{
+			links: make(map[string]interfaces.Link),
+			users: make(map[string][]interfaces.Link),
+		}, &res)
+	})
 	t.Run("add link", func(t *testing.T) {
 		s := newStorage()
 		testLink := "https://google.com"
