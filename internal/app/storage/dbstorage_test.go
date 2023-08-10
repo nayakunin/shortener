@@ -29,7 +29,7 @@ func (m *MockPool) Ping(ctx context.Context) error {
 
 func TestDBStorage(t *testing.T) {
 	t.Run("newDBStorage", func(t *testing.T) {
-		mockInitDb := func(conn *pgxpool.Conn) error {
+		mockInitDB := func(conn *pgxpool.Conn) error {
 			return nil
 		}
 		mockPool := &MockPool{
@@ -44,46 +44,11 @@ func TestDBStorage(t *testing.T) {
 			},
 		}
 		mockRequestBuffer := newRequestBuffer(MaxRequests)
-		res, err := newDBStorage(mockPool, mockInitDb, mockRequestBuffer)
+		res, err := newDBStorage(mockPool, mockInitDB, mockRequestBuffer)
 		assert.NoError(t, err)
 		assert.Equal(t, &DBStorage{
 			Pool:          mockPool,
 			requestBuffer: mockRequestBuffer,
 		}, res)
 	})
-
-	//t.Run("Add and Get", func(t *testing.T) {
-	//	storage := newDBStorage()
-	//	key, err := storage.Add("https://www.example.com", "user1")
-	//	assert.NoError(t, err)
-	//
-	//	retrievedLink, err := storage.Get(key)
-	//	assert.NoError(t, err)
-	//	assert.Equal(t, "https://www.example.com", retrievedLink)
-	//})
-	//
-	//t.Run("AddBatch", func(t *testing.T) {
-	//	storage := newDBStorage()
-	//	batches := []interfaces.BatchInput{
-	//		{OriginalURL: "https://www.example1.com"},
-	//		{OriginalURL: "https://www.example2.com"},
-	//	}
-	//
-	//	output, err := storage.AddBatch(batches, "user1")
-	//	assert.NoError(t, err)
-	//	assert.Len(t, output, 2)
-	//})
-	//
-	//t.Run("DeleteUserUrls", func(t *testing.T) {
-	//	storage := newDBStorage()
-	//
-	//	key, err := storage.Add("https://www.example.com", "user1")
-	//	assert.NoError(t, err)
-	//
-	//	err = storage.DeleteUserUrls("user1", []string{key})
-	//	assert.NoError(t, err)
-	//
-	//	_, err = storage.Get(key)
-	//	assert.Error(t, err)
-	//})
 }

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -14,6 +15,7 @@ func TestFileStorage(t *testing.T) {
 		err := os.Remove(name)
 		if err != nil {
 			// do nothing
+			fmt.Println(err)
 		}
 	}(filePath) // clean up the test file after the test
 
