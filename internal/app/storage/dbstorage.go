@@ -16,7 +16,7 @@ const Timeout = 5 * time.Second
 
 // DBStorage is a storage based on PostgreSQL
 type DBStorage struct {
-	Pool          *pgxpool.Pool
+	Pool          DBPool
 	requestBuffer *RequestBuffer
 }
 
@@ -35,12 +35,7 @@ func initDB(conn *pgxpool.Conn) error {
 	return nil
 }
 
-func newDBStorage(databaseURL string) (*DBStorage, error) {
-	pool, err := pgxpool.New(context.Background(), databaseURL)
-	if err != nil {
-		return nil, err
-	}
-
+func newDBStorage(pool DBPool, initDB InitDBFunc, requestBuffer *RequestBuffer) (*DBStorage, error) {
 	conn, err := pool.Acquire(context.Background())
 	if err != nil {
 		return nil, err
@@ -53,7 +48,7 @@ func newDBStorage(databaseURL string) (*DBStorage, error) {
 
 	db := DBStorage{
 		Pool:          pool,
-		requestBuffer: newRequestBuffer(MaxRequests),
+		requestBuffer: requestBuffer,
 	}
 
 	go db.requestBufferWorker(context.Background())

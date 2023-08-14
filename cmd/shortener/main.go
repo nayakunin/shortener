@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"time"
@@ -11,6 +12,16 @@ import (
 	storagePackage "github.com/nayakunin/shortener/internal/app/storage"
 )
 
+// Build information. Populated at build-time.
+var (
+	// BuildVersion is a version of the build
+	BuildVersion string
+	// BuildTime is a time of the build
+	BuildTime string
+	// BuildCommit is a git commit of the build
+	BuildCommit string
+)
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
@@ -19,7 +30,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	storage, err := storagePackage.New(*cfg)
+	if BuildVersion == "" {
+		BuildVersion = "N/A"
+	}
+
+	if BuildTime == "" {
+		BuildTime = "N/A"
+	}
+
+	if BuildCommit == "" {
+		BuildCommit = "N/A"
+	}
+
+	fmt.Printf("Build Version: %s\n", BuildVersion)
+	fmt.Printf("Build Time: %s\n", BuildTime)
+	fmt.Printf("Build Commit: %s\n", BuildCommit)
+
+	storage, err := storagePackage.NewStorage(*cfg)
 	if err != nil {
 		log.Fatal(err)
 	}

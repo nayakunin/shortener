@@ -2,6 +2,9 @@
 package storage
 
 import (
+	"context"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/nayakunin/shortener/internal/app/interfaces"
 	"github.com/pkg/errors"
 
@@ -29,12 +32,17 @@ type Storager interface {
 	DeleteUserUrls(userID string, keys []string) error
 }
 
-// New returns new storage
-func New(cfg config.Config) (Storager, error) {
+// NewStorage returns new storage
+func NewStorage(cfg config.Config) (Storager, error) {
 	if cfg.DatabaseDSN != "" {
-		s, err := newDBStorage(cfg.DatabaseDSN)
+		pool, err := pgxpool.New(context.Background(), cfg.DatabaseDSN)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to init database")
+		}
+		rb := newRequestBuffer(MaxRequests)
+		s, err := newDBStorage(pool, initDB, rb)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to init database")
 		}
 		return s, nil
 	}
@@ -43,7 +51,7 @@ func New(cfg config.Config) (Storager, error) {
 		s := newFileStorage(cfg.FileStoragePath)
 		err := s.restoreData()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to restore data")
 		}
 		return &s, nil
 	}
