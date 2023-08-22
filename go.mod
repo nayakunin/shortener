@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/caarlos0/env/v7 v7.0.0
+	github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/autotls v0.0.5
 	github.com/gin-gonic/gin v1.8.2

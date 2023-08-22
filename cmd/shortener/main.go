@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/fvbock/endless"
 	"github.com/gin-contrib/pprof"
-	"github.com/gin-gonic/autotls"
 	"github.com/nayakunin/shortener/internal/app/server"
 	"github.com/nayakunin/shortener/internal/app/server/config"
 
@@ -53,8 +53,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	r, manager := server.NewRouter(*cfg, storage)
+	r, m := server.NewRouter(*cfg, storage)
 	pprof.Register(r)
 
-	log.Fatal(autotls.RunWithManager(r, &manager))
+	endlessServer := endless.NewServer(cfg.ServerAddress, r)
+	endlessServer.TLSConfig = m.TLSConfig()
+	endlessServer.TLSConfig.GetCertificate = m.GetCertificate
+
+	log.Fatal(endlessServer.ListenAndServeTLS("", ""))
 }

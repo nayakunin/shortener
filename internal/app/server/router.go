@@ -15,7 +15,7 @@ type Server struct {
 	Storage interfaces.Storage
 }
 
-func setupRouter(s Server) (*gin.Engine, autocert.Manager) {
+func setupRouter(s Server) (*gin.Engine, *autocert.Manager) {
 	r := gin.Default()
 
 	r.Use(func(c *gin.Context) {
@@ -42,15 +42,15 @@ func setupRouter(s Server) (*gin.Engine, autocert.Manager) {
 
 	m := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist("example1.com", "example2.com"),
+		HostPolicy: autocert.HostWhitelist("nikita-yakunin.dev"),
 		Cache:      autocert.DirCache("/var/www/.cache"),
 	}
 
-	return r, m
+	return r, &m
 }
 
 // NewRouter returns a new router for the application
-func NewRouter(cfg config.Config, s interfaces.Storage) (*gin.Engine, autocert.Manager) {
+func NewRouter(cfg config.Config, s interfaces.Storage) (*gin.Engine, *autocert.Manager) {
 	return setupRouter(Server{
 		Cfg:     cfg,
 		Storage: s,
