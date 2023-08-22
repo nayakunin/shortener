@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/gin-contrib/pprof"
+	"github.com/gin-gonic/autotls"
 	"github.com/nayakunin/shortener/internal/app/server"
 	"github.com/nayakunin/shortener/internal/app/server/config"
+
 	storagePackage "github.com/nayakunin/shortener/internal/app/storage"
 )
 
@@ -51,8 +53,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	r := server.NewRouter(*cfg, storage)
+	r, manager := server.NewRouter(*cfg, storage)
 	pprof.Register(r)
 
-	log.Fatal(r.Run(cfg.ServerAddress))
+	log.Fatal(autotls.RunWithManager(r, &manager))
 }
