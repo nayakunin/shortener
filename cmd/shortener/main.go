@@ -60,5 +60,5 @@ func main() {
 	endlessServer.TLSConfig = m.TLSConfig()
 	endlessServer.TLSConfig.GetCertificate = m.GetCertificate
 
-	log.Fatal(endlessServer.ListenAndServeTLS("", ""))
+	log.Fatal(endlessServer.ListenAndServe())
 }
