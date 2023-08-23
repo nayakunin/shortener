@@ -16,7 +16,7 @@ func TestNewRouter(t *testing.T) {
 
 	cfg := config.Config{}
 
-	router := NewRouter(cfg, mockStorage)
+	router, _ := NewRouter(cfg, mockStorage)
 
 	t.Run("Test Ping Endpoint", func(t *testing.T) {
 		w := httptest.NewRecorder()

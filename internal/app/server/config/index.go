@@ -60,7 +60,7 @@ func LoadConfig() (*Config, error) {
 		config.DatabaseDSN = flagsConfig.DatabaseDSN
 	}
 
-	if config.EnableHTTPS == false {
+	if !config.EnableHTTPS {
 		config.EnableHTTPS = flagsConfig.EnableHTTPS
 	}
 
