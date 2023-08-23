@@ -2,6 +2,8 @@
 package server
 
 import (
+	"sync"
+
 	"github.com/gin-gonic/gin"
 	"github.com/nayakunin/shortener/internal/app/interfaces"
 	"github.com/nayakunin/shortener/internal/app/server/config"
@@ -15,7 +17,7 @@ type Server struct {
 	Storage interfaces.Storage
 }
 
-func setupRouter(s Server) (*gin.Engine, *autocert.Manager) {
+func setupRouter(wg *sync.WaitGroup, s Server) (*gin.Engine, *autocert.Manager) {
 	r := gin.Default()
 
 	r.Use(func(c *gin.Context) {
@@ -25,6 +27,7 @@ func setupRouter(s Server) (*gin.Engine, *autocert.Manager) {
 
 	r.Use(middleware.Gzip())
 	r.Use(middleware.Auth(s.Cfg.AuthSecret))
+	r.Use(middleware.WaitGroup(wg))
 
 	{
 		r.POST("/", s.SaveLinkHandler)
@@ -50,8 +53,8 @@ func setupRouter(s Server) (*gin.Engine, *autocert.Manager) {
 }
 
 // NewRouter returns a new router for the application
-func NewRouter(cfg config.Config, s interfaces.Storage) (*gin.Engine, *autocert.Manager) {
-	return setupRouter(Server{
+func NewRouter(cfg config.Config, s interfaces.Storage, wg *sync.WaitGroup) (*gin.Engine, *autocert.Manager) {
+	return setupRouter(wg, Server{
 		Cfg:     cfg,
 		Storage: s,
 	})
