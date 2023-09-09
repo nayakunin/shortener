@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
-	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -24,11 +23,11 @@ var (
 
 var secret = "secret"
 
-func encodeCookie(value, secretKey string) (string, error) {
+func encodeCookie(value, secretKey string) string {
 	h := hmac.New(sha256.New, []byte(secretKey))
 	h.Write([]byte(value))
 	signature := hex.EncodeToString(h.Sum(nil))
-	return base64.StdEncoding.EncodeToString([]byte(value + "|" + signature)), nil
+	return base64.StdEncoding.EncodeToString([]byte(value + "|" + signature))
 }
 
 func decodeCookie(encoded, secretKey string) (string, error) {
@@ -61,11 +60,7 @@ func Auth(secret string) gin.HandlerFunc {
 		var value string
 		if err != nil || cookie == "" {
 			value = uuid.NewString()
-			encoded, err := encodeCookie(value, secret)
-			if err != nil {
-				c.AbortWithStatus(http.StatusInternalServerError)
-				return
-			}
+			encoded := encodeCookie(value, secret)
 			c.SetCookie("auth", encoded, 3600, "/", "", false, true)
 			c.Set("uuid", value)
 			c.Next()
@@ -74,11 +69,7 @@ func Auth(secret string) gin.HandlerFunc {
 		value, err = decodeCookie(cookie, secret)
 		if err != nil {
 			value = uuid.NewString()
-			encoded, err := encodeCookie(value, secret)
-			if err != nil {
-				c.AbortWithStatus(http.StatusInternalServerError)
-				return
-			}
+			encoded := encodeCookie(value, secret)
 			c.SetCookie("auth", encoded, 3600, "/", "", false, true)
 		}
 

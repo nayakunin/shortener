@@ -11,19 +11,21 @@ import (
 )
 
 func TestPing(t *testing.T) {
-	s := testutils.NewMockStorage([]testutils.MockLink{})
-	router := gin.Default()
-	server := Server{
-		Storage: s,
-		Cfg:     testutils.NewMockConfig(),
-	}
-	router.GET("/ping", server.pingHandler)
+	t.Run("Regular storage", func(t *testing.T) {
+		s := testutils.NewMockStorage([]testutils.MockLink{})
+		router := gin.Default()
+		server := Server{
+			Storage: s,
+			Cfg:     testutils.NewMockConfig(),
+		}
+		router.GET("/ping", server.pingHandler)
 
-	w := httptest.NewRecorder()
-	req := httptest.NewRequest("GET", "/ping", nil)
-	router.ServeHTTP(w, req)
-	res := w.Result()
-	defer res.Body.Close()
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest("GET", "/ping", nil)
+		router.ServeHTTP(w, req)
+		res := w.Result()
+		defer res.Body.Close()
 
-	assert.Equal(t, http.StatusOK, res.StatusCode)
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+	})
 }

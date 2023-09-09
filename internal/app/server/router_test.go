@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 
 	"github.com/nayakunin/shortener/internal/app/server/config"
@@ -16,7 +17,9 @@ func TestNewRouter(t *testing.T) {
 
 	cfg := config.Config{}
 
-	router := NewRouter(cfg, mockStorage)
+	wg := &sync.WaitGroup{}
+
+	router, _ := NewRouter(cfg, mockStorage, wg)
 
 	t.Run("Test Ping Endpoint", func(t *testing.T) {
 		w := httptest.NewRecorder()

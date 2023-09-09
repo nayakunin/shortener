@@ -31,8 +31,7 @@ func TestEncodeCookie(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := encodeCookie(tc.input, secret)
-			assert.NoError(t, err)
+			got := encodeCookie(tc.input, secret)
 			assert.Equal(t, tc.want, got)
 		})
 	}
@@ -57,6 +56,12 @@ func TestDecodeCookie(t *testing.T) {
 			name:  "non-empty input",
 			input: "dGVzdHw4OGNkMjEwOGI1MzQ3ZDk3M2NmMzljZGY5MDUzZDdkZDQyNzA0ODc2ZDhjOWE5YmQ4ZTJkMTY4MjU5ZDNkZGY3",
 			want:  "test",
+		},
+		{
+			name:  "invalid signature",
+			input: "dGVzdHw4OGNkMjEwOGI1MzQ3ZDk3M2NmMzljZGY5MDUzZDdkZDQyNzA0ODc2ZDhjOWE5YmQ4ZTJkMTY4MjU5ZDNkZGY2",
+			want:  "",
+			err:   ErrInvalidCookieSignature,
 		},
 	}
 
