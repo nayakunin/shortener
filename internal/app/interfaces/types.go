@@ -20,6 +20,12 @@ type Link struct {
 	IsDeleted   bool   `json:"-"`
 }
 
+// Stats is a stats object.
+type Stats struct {
+	Urls  int `json:"urls"`
+	Users int `json:"users"`
+}
+
 // Storage is a storage interface that implements all methods for working with storage
 type Storage interface {
 	Get(key string) (string, error)
@@ -27,4 +33,5 @@ type Storage interface {
 	AddBatch(batch []BatchInput, userID string) ([]BatchOutput, error)
 	GetUrlsByUser(userID string) (map[string]string, error)
 	DeleteUserUrls(userID string, keys []string) error
+	Stats() (Stats, error)
 }

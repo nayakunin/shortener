@@ -224,3 +224,32 @@ func (s *DBStorage) processDeleteRequests() {
 		}
 	}
 }
+
+// Stats returns stats
+func (s *DBStorage) Stats() (interfaces.Stats, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
+	defer cancel()
+
+	conn, err := s.Pool.Acquire(ctx)
+	if err != nil {
+		return interfaces.Stats{}, err
+	}
+	defer conn.Release()
+
+	var urls int
+	err = conn.QueryRow(ctx, "SELECT COUNT(*) FROM links").Scan(&urls)
+	if err != nil {
+		return interfaces.Stats{}, err
+	}
+
+	var users int
+	err = conn.QueryRow(ctx, "SELECT COUNT(DISTINCT user_id) FROM links").Scan(&users)
+	if err != nil {
+		return interfaces.Stats{}, err
+	}
+
+	return interfaces.Stats{
+		Urls:  urls,
+		Users: users,
+	}, nil
+}

@@ -1,0 +1,44 @@
+package middleware
+
+import (
+	"net"
+
+	"github.com/gin-gonic/gin"
+)
+
+func isTrustedSubnet(subnet string, ip string) bool {
+	subnetIP, subnetMask, err := net.ParseCIDR(subnet)
+	if err != nil {
+		return false
+	}
+
+	ipAddr := net.ParseIP(ip)
+	if ipAddr == nil {
+		return false
+	}
+
+	return subnetIP.Equal(ipAddr.Mask(subnetMask.Mask))
+}
+
+func Internal(subnet string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if subnet == "" {
+			c.AbortWithStatus(403)
+			return
+		}
+
+		xRealIP := c.GetHeader("X-Real-IP")
+
+		if xRealIP == "" {
+			c.AbortWithStatus(403)
+			return
+		}
+
+		if !isTrustedSubnet(subnet, xRealIP) {
+			c.AbortWithStatus(403)
+			return
+		}
+
+		c.Next()
+	}
+}

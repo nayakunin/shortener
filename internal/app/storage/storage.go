@@ -129,3 +129,14 @@ func (s *Storage) DeleteUserUrls(userID string, keys []string) error {
 
 	return nil
 }
+
+// Stats returns stats
+func (s *Storage) Stats() (interfaces.Stats, error) {
+	s.Lock()
+	defer s.Unlock()
+
+	return interfaces.Stats{
+		Urls:  len(s.links),
+		Users: len(s.users),
+	}, nil
+}

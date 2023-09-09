@@ -23,6 +23,7 @@ type Config struct {
 	FileStoragePath string `env:"FILE_STORAGE_PATH" json:"file_storage_path"`
 	DatabaseDSN     string `env:"DATABASE_DSN" json:"database_dsn"`
 	EnableHTTPS     bool   `env:"ENABLE_HTTPS" json:"enable_https"`
+	TrustedSubnet   string `env:"TRUSTED_SUBNET" json:"trusted_subnet"`
 	Config          string `env:"CONFIG"`
 	AuthSecret      string
 }
@@ -41,6 +42,7 @@ func LoadConfig() (*Config, error) {
 	flag.StringVar(&flagsConfig.FileStoragePath, "f", defaultFilePath, "file storage path")
 	flag.StringVar(&flagsConfig.DatabaseDSN, "d", defaultDatabaseDSN, "database dsn")
 	flag.BoolVar(&flagsConfig.EnableHTTPS, "s", false, "enable https")
+	flag.StringVar(&flagsConfig.TrustedSubnet, "t", "", "trusted subnet")
 	flag.StringVar(&flagsConfig.Config, "c", "", "config file")
 	flag.Parse()
 

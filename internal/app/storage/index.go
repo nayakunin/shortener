@@ -30,6 +30,7 @@ type Storager interface {
 	AddBatch(batch []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error)
 	GetUrlsByUser(userID string) (map[string]string, error)
 	DeleteUserUrls(userID string, keys []string) error
+	Stats() (interfaces.Stats, error)
 }
 
 // NewStorage returns new storage

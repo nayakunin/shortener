@@ -41,6 +41,12 @@ func setupRouter(wg *sync.WaitGroup, s Server) (*gin.Engine, *autocert.Manager) 
 		api.POST("/shorten/batch", s.ShortenBatchHandler)
 		api.GET("/user/urls", s.GetUrlsByUserHandler)
 		api.DELETE("/user/urls", s.DeleteUserUrlsHandler)
+
+		internal := api.Group("/internal")
+		internal.Use(middleware.Internal())
+		{
+			internal.GET("/internal/stats", s.statsHandler)
+		}
 	}
 
 	m := autocert.Manager{
