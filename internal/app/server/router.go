@@ -43,7 +43,7 @@ func setupRouter(wg *sync.WaitGroup, s Server) (*gin.Engine, *autocert.Manager) 
 		api.DELETE("/user/urls", s.DeleteUserUrlsHandler)
 
 		internal := api.Group("/internal")
-		internal.Use(middleware.Internal())
+		internal.Use(middleware.Internal(s.Cfg.TrustedSubnet))
 		{
 			internal.GET("/internal/stats", s.statsHandler)
 		}
