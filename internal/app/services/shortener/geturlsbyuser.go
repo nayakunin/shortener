@@ -22,9 +22,9 @@ func (s *Service) GetUrlsByUser(userID string) ([]interfaces.Link, error) {
 	}
 
 	response := make([]interfaces.Link, 0, len(urls))
-	for shortURL, originalURL := range urls {
+	for key, originalURL := range urls {
 		response = append(response, interfaces.Link{
-			ShortURL:    fmt.Sprintf("%s/%s", s.Cfg.BaseURL, shortURL),
+			ShortURL:    fmt.Sprintf("%s/%s", s.Cfg.BaseURL, key),
 			OriginalURL: originalURL,
 		})
 	}

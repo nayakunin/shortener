@@ -2,7 +2,6 @@ package testutils
 
 import (
 	"github.com/nayakunin/shortener/internal/app/interfaces"
-	"github.com/nayakunin/shortener/internal/app/services/shortener"
 )
 
 type MockShortenerServiceParameters struct {
@@ -24,7 +23,7 @@ type MockShortenerService struct {
 	parameters MockShortenerServiceParameters
 }
 
-func NewMockShortenerService(parameters MockShortenerServiceParameters) shortener.Shortener {
+func NewMockShortenerService(parameters MockShortenerServiceParameters) *MockShortenerService {
 	return &MockShortenerService{
 		parameters: parameters,
 	}

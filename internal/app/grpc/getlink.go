@@ -12,7 +12,7 @@ import (
 
 func (s *Server) GetLink(ctx context.Context, in *pb.GetLinkRequest) (*pb.GetLinkReply, error) {
 	if in.Key == "" {
-		return nil, status.Errorf(codes.Unauthenticated, "key is required")
+		return nil, status.Errorf(codes.InvalidArgument, "key is required")
 	}
 
 	link, err := s.Shortener.Get(in.Key)
