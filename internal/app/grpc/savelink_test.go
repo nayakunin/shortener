@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -102,7 +103,7 @@ func TestServer_SaveLink(t *testing.T) {
 
 			server := NewServer(shortenerService)
 
-			reply, err := server.SaveLink(nil, tc.in)
+			reply, err := server.SaveLink(context.Background(), tc.in)
 			if tc.want.err {
 				assert.Error(t, err)
 

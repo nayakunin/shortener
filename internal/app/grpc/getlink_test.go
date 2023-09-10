@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -69,7 +70,7 @@ func TestServer_GetLink(t *testing.T) {
 				GetReplyString: tc.storageReply.GetSuccess,
 			})
 			s := NewServer(shortenerService)
-			reply, err := s.GetLink(nil, tc.in)
+			reply, err := s.GetLink(context.Background(), tc.in)
 
 			if tc.want.err {
 				assert.Error(t, err)

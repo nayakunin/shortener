@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -56,7 +57,7 @@ func TestServer_Stats(t *testing.T) {
 				StatsError: tc.shortenerReply.err,
 			})
 			s := NewServer(store)
-			reply, err := s.Stats(nil, &pb.Empty{})
+			reply, err := s.Stats(context.Background(), &pb.Empty{})
 
 			if tc.want.err {
 				assert.Error(t, err)

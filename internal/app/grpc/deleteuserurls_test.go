@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -57,7 +58,7 @@ func TestServer_DeleteUserUrls(t *testing.T) {
 				DeleteReplyError: tc.shortenerReply.err,
 			})
 			s := NewServer(shortenerService)
-			_, err := s.DeleteUserUrls(nil, tc.in)
+			_, err := s.DeleteUserUrls(context.Background(), tc.in)
 
 			if tc.wantErr {
 				assert.Error(t, err)

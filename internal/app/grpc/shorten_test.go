@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -102,7 +103,7 @@ func TestServer_Shorten(t *testing.T) {
 
 			server := NewServer(shortenerService)
 
-			reply, err := server.Shorten(nil, tc.in)
+			reply, err := server.Shorten(context.Background(), tc.in)
 			if tc.want.err {
 				assert.Error(t, err)
 

@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -33,7 +34,7 @@ func TestServer_Ping(t *testing.T) {
 				PingError: tc.shortenerError,
 			})
 			s := NewServer(shortenerService)
-			_, err := s.Ping(nil, &pb.Empty{})
+			_, err := s.Ping(context.Background(), &pb.Empty{})
 			if tc.wantErr {
 				assert.Error(t, err)
 				return

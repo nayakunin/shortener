@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -122,7 +123,7 @@ func TestServer_ShortenBatch(t *testing.T) {
 				ShortenBatchError: tc.shortenerReply.err,
 			})
 			s := NewServer(store)
-			reply, err := s.ShortenBatch(nil, tc.in)
+			reply, err := s.ShortenBatch(context.Background(), tc.in)
 
 			if tc.want.err {
 				assert.Error(t, err)

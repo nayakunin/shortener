@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -90,7 +91,7 @@ func TestServer_GetUrlsByUser(t *testing.T) {
 				GetUrlsError: tc.shortenerReply.err,
 			})
 			s := NewServer(shortenerService)
-			_, err := s.GetUrlsByUser(nil, tc.in)
+			_, err := s.GetUrlsByUser(context.Background(), tc.in)
 
 			if tc.want.err {
 				assert.Error(t, err)
