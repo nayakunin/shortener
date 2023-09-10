@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// isTrustedSubnet checks if ip is in subnet
 func isTrustedSubnet(subnet string, ip string) bool {
 	subnetIP, subnetMask, err := net.ParseCIDR(subnet)
 	if err != nil {
@@ -20,6 +21,7 @@ func isTrustedSubnet(subnet string, ip string) bool {
 	return subnetIP.Equal(ipAddr.Mask(subnetMask.Mask))
 }
 
+// Internal checks if request is internal
 func Internal(subnet string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if subnet == "" {

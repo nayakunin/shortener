@@ -4,35 +4,42 @@ import (
 	"github.com/nayakunin/shortener/internal/app/interfaces"
 )
 
+// GetMock is a mock struct for interfaces.Storage
 type GetMock struct {
 	Success string
 	Error   error
 }
 
+// AddMock is a mock struct for interfaces.Storage
 type AddMock struct {
 	Success string
 	Error   error
 }
 
+// DeleteUserUrlsMock is a mock struct for interfaces.Storage
 type DeleteUserUrlsMock struct {
 	Error error
 }
 
+// GetUrlsByUserMock is a mock struct for interfaces.Storage
 type GetUrlsByUserMock struct {
 	Success map[string]string
 	Error   error
 }
 
+// AddBatchMock is a mock struct for interfaces.Storage
 type AddBatchMock struct {
 	Success []interfaces.DBBatchOutput
 	Error   error
 }
 
+// StatsMock is a mock struct for interfaces.Storage
 type StatsMock struct {
 	Success interfaces.Stats
 	Error   error
 }
 
+// SimpleMockStorageParameters is a mock struct for interfaces.Storage
 type SimpleMockStorageParameters struct {
 	Get            GetMock
 	Add            AddMock

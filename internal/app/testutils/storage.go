@@ -131,6 +131,7 @@ func (s *MockStorage) DeleteUserUrls(userID string, keys []string) error {
 	return nil
 }
 
+// Stats implements interfaces.Storage
 func (s *MockStorage) Stats() (interfaces.Stats, error) {
 	return interfaces.Stats{
 		Urls:  len(s.links),

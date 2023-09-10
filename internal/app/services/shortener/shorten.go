@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Errors
 var (
 	// ErrInvalidURL is returned when url is invalid
 	ErrInvalidURL = errors.New("invalid url")

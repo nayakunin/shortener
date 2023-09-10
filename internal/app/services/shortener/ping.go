@@ -7,10 +7,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	// ErrDBPingFailed is returned when url is invalid
-	ErrDBPingFailed = errors.New("unable to ping database")
-)
+// ErrDBPingFailed is returned when url is invalid
+var ErrDBPingFailed = errors.New("unable to ping database")
 
 // Ping pings database
 func (s *Service) Ping() error {

@@ -7,10 +7,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	// ErrNoUrlsFound is returned when no urls found
-	ErrNoUrlsFound = errors.New("no urls found")
-)
+// ErrNoUrlsFound is returned when no urls found
+var ErrNoUrlsFound = errors.New("no urls found")
 
 // GetUrlsByUser returns urls by user
 func (s *Service) GetUrlsByUser(userID string) ([]interfaces.Link, error) {
