@@ -1,50 +1,27 @@
 package grpc
 
 import (
-	"context"
-
 	"github.com/nayakunin/shortener/internal/app/interfaces"
-	"github.com/nayakunin/shortener/internal/app/server/config"
 	pb "github.com/nayakunin/shortener/proto"
 )
 
+type Shortener interface {
+	Shorten(userID string, url string) (string, error)
+	ShortenBatch(userID string, urls []interfaces.BatchInput) ([]interfaces.BatchOutput, error)
+	Get(key string) (string, error)
+	DeleteUserUrls(userID string, keys []string) error
+	GetUrlsByUser(userID string) ([]interfaces.Link, error)
+	Stats() (*interfaces.Stats, error)
+	Ping() error
+}
+
 type Server struct {
 	pb.UnimplementedShortenerServer
-	Cfg     config.Config
-	Storage interfaces.Storage
+	Shortener Shortener
 }
 
-func NewServer(cfg config.Config, s interfaces.Storage) *Server {
+func NewServer(shortener Shortener) *Server {
 	return &Server{
-		Cfg:     cfg,
-		Storage: s,
+		Shortener: shortener,
 	}
-}
-
-func (s *Server) DeleteUserUrls(ctx context.Context, in *pb.DeleteUserUrlsRequest) (*pb.Empty, error) {
-	return nil, nil
-}
-
-func (s *Server) GetUrlsByUser(ctx context.Context, in *pb.Empty) (*pb.GetUrlsByUserReply, error) {
-	return nil, nil
-}
-
-func (s *Server) GetLink(ctx context.Context, in *pb.GetLinkRequest) (*pb.GetLinkReply, error) {
-	return nil, nil
-}
-
-func (s *Server) SaveLink(ctx context.Context, in *pb.SaveLinkRequest) (*pb.SaveLinkReply, error) {
-	return nil, nil
-}
-
-func (s *Server) Shorten(ctx context.Context, in *pb.ShortenRequest) (*pb.ShortenReply, error) {
-	return nil, nil
-}
-
-func (s *Server) ShortenBatch(ctx context.Context, in *pb.ShortenBatchRequest) (*pb.ShortenBatchReply, error) {
-	return nil, nil
-}
-
-func (s *Server) Stats(ctx context.Context, in *pb.Empty) (*pb.StatsReply, error) {
-	return nil, nil
 }

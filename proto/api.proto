@@ -16,7 +16,12 @@ service Shortener {
 }
 
 message DeleteUserUrlsRequest {
-  repeated string keys = 1;
+  string userID = 1;
+  repeated string keys = 2;
+}
+
+message GetUrlsByUserRequest {
+  string userID = 1;
 }
 
 message GetUrlsByUserLink {
@@ -37,6 +42,7 @@ message GetLinkReply {
 }
 
 message SaveLinkRequest {
+  string userID = 1;
   string url = 2;
 }
 
@@ -44,8 +50,9 @@ message SaveLinkReply {
   string url = 1;
 }
 
-message ShortenRequest {
-  string url = 1;
+message ShortenRequest{
+  string userID = 1;
+  string url = 2;
 }
 
 message ShortenReply {
@@ -58,7 +65,8 @@ message ShortenBatchInput {
 }
 
 message ShortenBatchRequest {
-  repeated ShortenBatchInput urls = 1;
+  string userID = 1;
+  repeated ShortenBatchInput urls = 2;
 }
 
 message ShortenBatchOutput {
