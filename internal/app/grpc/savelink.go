@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// SaveLink saves link for user
 func (s *Server) SaveLink(ctx context.Context, in *pb.SaveLinkRequest) (*pb.SaveLinkReply, error) {
 	if in.UserID == "" {
 		return nil, status.Errorf(codes.Unauthenticated, "user_id is required")

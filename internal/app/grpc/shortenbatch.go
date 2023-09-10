@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// ShortenBatch shortens urls for user
 func (s *Server) ShortenBatch(ctx context.Context, in *pb.ShortenBatchRequest) (*pb.ShortenBatchReply, error) {
 	if in.UserID == "" {
 		return nil, status.Errorf(codes.Unauthenticated, "user_id is required")

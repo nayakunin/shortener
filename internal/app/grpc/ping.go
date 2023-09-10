@@ -6,6 +6,7 @@ import (
 	pb "github.com/nayakunin/shortener/proto"
 )
 
+// Ping returns empty response
 func (s *Server) Ping(ctx context.Context, in *pb.Empty) (*pb.Empty, error) {
 	err := s.Shortener.Ping()
 	if err != nil {

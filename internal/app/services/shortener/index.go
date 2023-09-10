@@ -5,6 +5,7 @@ import (
 	"github.com/nayakunin/shortener/internal/app/interfaces"
 )
 
+// Shortener is an interface for shortener service
 type Shortener interface {
 	Shorten(userID string, url string) (string, error)
 	ShortenBatch(userID string, urls []interfaces.BatchInput) ([]interfaces.BatchOutput, error)
@@ -15,11 +16,13 @@ type Shortener interface {
 	Ping() error
 }
 
+// Service is a struct of the shortener.
 type Service struct {
 	Cfg     config.Config
 	Storage interfaces.Storage
 }
 
+// NewShortenerService is a constructor for the shortener service.
 func NewShortenerService(cfg config.Config, s interfaces.Storage) *Service {
 	return &Service{
 		Cfg:     cfg,

@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// GetUrlsByUser returns urls by user id
 func (s *Server) GetUrlsByUser(ctx context.Context, in *pb.GetUrlsByUserRequest) (*pb.GetUrlsByUserReply, error) {
 	if in.UserID == "" {
 		return nil, status.Errorf(codes.Unauthenticated, "user id is required")

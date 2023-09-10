@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Shorten shortens url for user
 func (s *Server) Shorten(ctx context.Context, in *pb.ShortenRequest) (*pb.ShortenReply, error) {
 	if in.UserID == "" {
 		return nil, status.Errorf(codes.Unauthenticated, "user_id is required")

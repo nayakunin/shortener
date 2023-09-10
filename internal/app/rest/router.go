@@ -10,6 +10,7 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
+// Shortener is an interface for shortener service
 type Shortener interface {
 	Shorten(userID string, url string) (string, error)
 	ShortenBatch(userID string, urls []interfaces.BatchInput) ([]interfaces.BatchOutput, error)

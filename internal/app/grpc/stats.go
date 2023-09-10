@@ -6,6 +6,7 @@ import (
 	pb "github.com/nayakunin/shortener/proto"
 )
 
+// Stats returns stats
 func (s *Server) Stats(ctx context.Context, in *pb.Empty) (*pb.StatsReply, error) {
 	stats, err := s.Shortener.Stats()
 	if err != nil {

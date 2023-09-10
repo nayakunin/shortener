@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// GetLink returns link by key
 func (s *Server) GetLink(ctx context.Context, in *pb.GetLinkRequest) (*pb.GetLinkReply, error) {
 	if in.Key == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "key is required")

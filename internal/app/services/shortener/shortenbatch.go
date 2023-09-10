@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ShortenBatch shortens batch of urls
 func (s *Service) ShortenBatch(userID string, input []interfaces.BatchInput) ([]interfaces.BatchOutput, error) {
 	output, err := s.Storage.AddBatch(input, userID)
 	if err != nil {

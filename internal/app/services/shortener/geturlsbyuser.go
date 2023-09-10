@@ -8,9 +8,11 @@ import (
 )
 
 var (
+	// ErrNoUrlsFound is returned when no urls found
 	ErrNoUrlsFound = errors.New("no urls found")
 )
 
+// GetUrlsByUser returns urls by user
 func (s *Service) GetUrlsByUser(userID string) ([]interfaces.Link, error) {
 	urls, err := s.Storage.GetUrlsByUser(userID)
 	if err != nil {
