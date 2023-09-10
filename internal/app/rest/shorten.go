@@ -48,7 +48,7 @@ func (s Server) ShortenHandler(c *gin.Context) {
 		return
 	}
 
-	shortUrl, err := s.Shortener.Shorten(userID, req.URL)
+	shortURL, err := s.Shortener.Shorten(userID, req.URL)
 	if err != nil {
 		if errors.Is(err, shortener.ErrInvalidURL) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid url"})
@@ -56,7 +56,7 @@ func (s Server) ShortenHandler(c *gin.Context) {
 		}
 
 		if errors.Is(err, storage.ErrKeyExists) {
-			c.AbortWithStatusJSON(http.StatusConflict, ShortenResponse{Result: shortUrl})
+			c.AbortWithStatusJSON(http.StatusConflict, ShortenResponse{Result: shortURL})
 			return
 		}
 
@@ -64,5 +64,5 @@ func (s Server) ShortenHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, ShortenResponse{Result: shortUrl})
+	c.JSON(http.StatusCreated, ShortenResponse{Result: shortURL})
 }

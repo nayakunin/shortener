@@ -19,10 +19,10 @@ func (s *Service) Shorten(userID string, urlString string) (string, error) {
 	}
 
 	key, err := s.Storage.Add(urlString, userID)
-	shortUrl := fmt.Sprintf("%s/%s", s.Cfg.BaseURL, key)
+	shortURL := fmt.Sprintf("%s/%s", s.Cfg.BaseURL, key)
 	if err != nil {
-		return shortUrl, errors.Wrap(err, ErrShortenFailed.Error())
+		return shortURL, errors.Wrap(err, ErrShortenFailed.Error())
 	}
 
-	return shortUrl, nil
+	return shortURL, nil
 }
