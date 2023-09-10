@@ -1,8 +1,6 @@
 package testutils
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/nayakunin/shortener/internal/app/config"
 	"github.com/nayakunin/shortener/internal/app/interfaces"
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
@@ -138,20 +136,4 @@ func (s *MockStorage) Stats() (interfaces.Stats, error) {
 		Urls:  len(s.links),
 		Users: len(s.users),
 	}, nil
-}
-
-// NewMockConfig creates a new mock config
-func NewMockConfig() config.Config {
-	return config.Config{
-		BaseURL: "http://localhost:8080",
-	}
-}
-
-// AddContext adds config and uuid to gin context
-func AddContext(r *gin.Engine, cfg config.Config, userID string) {
-	r.Use(func(c *gin.Context) {
-		c.Set("config", cfg)
-		c.Set("uuid", userID)
-		c.Next()
-	})
 }
