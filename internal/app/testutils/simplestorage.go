@@ -86,6 +86,7 @@ func (s *SimpleMockStorage) DeleteUserUrls(userID string, keys []string) error {
 	return s.parameters.DeleteUserUrls.Error
 }
 
+// Stats implements interfaces.Storage
 func (s *SimpleMockStorage) Stats() (interfaces.Stats, error) {
 	return s.parameters.Stats.Success, s.parameters.Stats.Error
 }
