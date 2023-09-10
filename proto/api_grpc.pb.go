@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ShortenerClient interface {
 	DeleteUserUrls(ctx context.Context, in *DeleteUserUrlsRequest, opts ...grpc.CallOption) (*Empty, error)
-	GetUrlsByUser(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetUrlsByUserReply, error)
+	GetUrlsByUser(ctx context.Context, in *GetUrlsByUserRequest, opts ...grpc.CallOption) (*GetUrlsByUserReply, error)
 	GetLink(ctx context.Context, in *GetLinkRequest, opts ...grpc.CallOption) (*GetLinkReply, error)
 	SaveLink(ctx context.Context, in *SaveLinkRequest, opts ...grpc.CallOption) (*SaveLinkReply, error)
 	Shorten(ctx context.Context, in *ShortenRequest, opts ...grpc.CallOption) (*ShortenReply, error)
@@ -49,7 +49,7 @@ func (c *shortenerClient) DeleteUserUrls(ctx context.Context, in *DeleteUserUrls
 	return out, nil
 }
 
-func (c *shortenerClient) GetUrlsByUser(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*GetUrlsByUserReply, error) {
+func (c *shortenerClient) GetUrlsByUser(ctx context.Context, in *GetUrlsByUserRequest, opts ...grpc.CallOption) (*GetUrlsByUserReply, error) {
 	out := new(GetUrlsByUserReply)
 	err := c.cc.Invoke(ctx, "/generated.Shortener/GetUrlsByUser", in, out, opts...)
 	if err != nil {
@@ -117,7 +117,7 @@ func (c *shortenerClient) Ping(ctx context.Context, in *Empty, opts ...grpc.Call
 // for forward compatibility
 type ShortenerServer interface {
 	DeleteUserUrls(context.Context, *DeleteUserUrlsRequest) (*Empty, error)
-	GetUrlsByUser(context.Context, *Empty) (*GetUrlsByUserReply, error)
+	GetUrlsByUser(context.Context, *GetUrlsByUserRequest) (*GetUrlsByUserReply, error)
 	GetLink(context.Context, *GetLinkRequest) (*GetLinkReply, error)
 	SaveLink(context.Context, *SaveLinkRequest) (*SaveLinkReply, error)
 	Shorten(context.Context, *ShortenRequest) (*ShortenReply, error)
@@ -134,7 +134,7 @@ type UnimplementedShortenerServer struct {
 func (UnimplementedShortenerServer) DeleteUserUrls(context.Context, *DeleteUserUrlsRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserUrls not implemented")
 }
-func (UnimplementedShortenerServer) GetUrlsByUser(context.Context, *Empty) (*GetUrlsByUserReply, error) {
+func (UnimplementedShortenerServer) GetUrlsByUser(context.Context, *GetUrlsByUserRequest) (*GetUrlsByUserReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUrlsByUser not implemented")
 }
 func (UnimplementedShortenerServer) GetLink(context.Context, *GetLinkRequest) (*GetLinkReply, error) {
@@ -187,7 +187,7 @@ func _Shortener_DeleteUserUrls_Handler(srv interface{}, ctx context.Context, dec
 }
 
 func _Shortener_GetUrlsByUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Empty)
+	in := new(GetUrlsByUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -199,7 +199,7 @@ func _Shortener_GetUrlsByUser_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/generated.Shortener/GetUrlsByUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ShortenerServer).GetUrlsByUser(ctx, req.(*Empty))
+		return srv.(ShortenerServer).GetUrlsByUser(ctx, req.(*GetUrlsByUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

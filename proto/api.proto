@@ -6,7 +6,7 @@ option go_package = "shortener/internal/generated";
 
 service Shortener {
   rpc DeleteUserUrls(DeleteUserUrlsRequest) returns (Empty);
-  rpc GetUrlsByUser(Empty) returns (GetUrlsByUserReply);
+  rpc GetUrlsByUser(GetUrlsByUserRequest) returns (GetUrlsByUserReply);
   rpc GetLink(GetLinkRequest) returns (GetLinkReply);
   rpc SaveLink(SaveLinkRequest) returns (SaveLinkReply);
   rpc Shorten(ShortenRequest) returns (ShortenReply);

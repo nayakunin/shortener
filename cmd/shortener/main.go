@@ -106,7 +106,7 @@ func main() {
 		}
 
 		grpcServer := grpcCore.NewServer()
-		pb.RegisterShortenerServer(grpcServer, grpc.NewServer(*cfg, storage))
+		pb.RegisterShortenerServer(grpcServer, grpc.NewServer(shortenerService))
 
 		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatalf("failed to serve: %v", err)
