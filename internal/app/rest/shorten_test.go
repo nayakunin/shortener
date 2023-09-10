@@ -1,7 +1,6 @@
-package server
+package rest
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,77 +9,67 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nayakunin/shortener/internal/app/server/testutils"
 	"github.com/nayakunin/shortener/internal/app/services/shortener"
+	"github.com/nayakunin/shortener/internal/app/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestShortenBatch(t *testing.T) {
+func TestShorten(t *testing.T) {
 	type want struct {
 		statusCode  int
 		contentType string
-		response    []ShortenBatchOutput
+		response    string
 	}
 
 	cfg := testutils.NewMockConfig()
 
 	tests := []struct {
 		name                string
-		requestBody         []ShortenBatchInput
+		requestBody         string
 		shouldCheckResponse bool
-		storage             []testutils.MockLink
+		links               []testutils.MockLink
 		want                want
 	}{
 		{
-			name: "success",
-			requestBody: []ShortenBatchInput{{
-				CorrelationID: "1",
-				OriginalURL:   "https://google.com/1",
-			}},
+			name:                "success",
+			requestBody:         `{"url": "https://google.com"}`,
 			shouldCheckResponse: true,
 			want: want{
-				statusCode: http.StatusCreated,
-				response: []ShortenBatchOutput{{
-					CorrelationID: "1",
-					ShortURL:      fmt.Sprintf("%s/%s", cfg.BaseURL, "link"),
-				}},
+				statusCode:  http.StatusCreated,
+				response:    fmt.Sprintf(`{"result":"%s/%s"}`, cfg.BaseURL, "link"),
 				contentType: "application/json; charset=utf-8",
 			},
 		},
 		{
 			name:        "empty body",
-			requestBody: []ShortenBatchInput{},
+			requestBody: `{ "url": "" }`,
 			want: want{
 				statusCode:  http.StatusBadRequest,
 				contentType: "application/json; charset=utf-8",
 			},
 		},
 		{
-			name: "invalid url",
-			requestBody: []ShortenBatchInput{{
-				CorrelationID: "1",
-				OriginalURL:   "sda",
-			}},
+			name:        "invalid url",
+			requestBody: `{"url": "google.com"}`,
 			want: want{
 				statusCode:  http.StatusBadRequest,
 				contentType: "application/json; charset=utf-8",
 			},
 		},
 		{
-			name: "duplicate url",
-			requestBody: []ShortenBatchInput{{
-				CorrelationID: "1",
-				OriginalURL:   "https://google.com",
-			}},
-			storage: []testutils.MockLink{
+			name:        "duplicate url",
+			requestBody: `{"url": "https://google.com"}`,
+			links: []testutils.MockLink{
 				{
 					OriginalURL: "https://google.com",
 					ShortURL:    "link",
 				},
 			},
+			shouldCheckResponse: true,
 			want: want{
 				statusCode:  http.StatusConflict,
+				response:    fmt.Sprintf(`{"result":"%s/%s"}`, cfg.BaseURL, "link"),
 				contentType: "application/json; charset=utf-8",
 			},
 		},
@@ -88,20 +77,17 @@ func TestShortenBatch(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := testutils.NewMockStorage(tt.storage)
+			s := testutils.NewMockStorage(tt.links)
 			router := gin.Default()
 			testutils.AddContext(router, cfg, "userID")
 			service := shortener.NewShortenerService(cfg, s)
 			server := Server{
 				Shortener: service,
 			}
-			router.POST("/", server.ShortenBatchHandler)
+			router.POST("/", server.ShortenHandler)
 
 			w := httptest.NewRecorder()
-			input, err := json.Marshal(tt.requestBody)
-			require.NoError(t, err)
-
-			body := strings.NewReader(string(input))
+			body := strings.NewReader(tt.requestBody)
 			request := httptest.NewRequest(http.MethodPost, "/", body)
 			router.ServeHTTP(w, request)
 			res := w.Result()
@@ -111,9 +97,7 @@ func TestShortenBatch(t *testing.T) {
 			if tt.shouldCheckResponse {
 				resBody, err := io.ReadAll(res.Body)
 				require.NoError(t, err)
-				output, err := json.Marshal(tt.want.response)
-				require.NoError(t, err)
-				assert.JSONEq(t, string(output), string(resBody))
+				assert.Equal(t, tt.want.response, string(resBody))
 			}
 
 			assert.Equal(t, tt.want.statusCode, res.StatusCode)

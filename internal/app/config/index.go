@@ -1,4 +1,4 @@
-// Package config provides configuration for the server.
+// Package config provides configuration for the rest.
 package config
 
 import (
@@ -16,7 +16,7 @@ const defaultFilePath = ""
 const defaultDatabaseDSN = ""
 const defaultAuthSecret = "secret"
 
-// Config contains configuration for the server.
+// Config contains configuration for the rest.
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" json:"server_address"`
 	BaseURL         string `env:"BASE_URL" json:"base_url"`
@@ -37,7 +37,7 @@ func LoadConfig() (*Config, error) {
 	}
 
 	flagsConfig := new(Config)
-	flag.StringVar(&flagsConfig.ServerAddress, "a", defaultServerAddress, "server address")
+	flag.StringVar(&flagsConfig.ServerAddress, "a", defaultServerAddress, "rest address")
 	flag.StringVar(&flagsConfig.BaseURL, "b", defaultBaseURL, "base url")
 	flag.StringVar(&flagsConfig.FileStoragePath, "f", defaultFilePath, "file storage path")
 	flag.StringVar(&flagsConfig.DatabaseDSN, "d", defaultDatabaseDSN, "database dsn")

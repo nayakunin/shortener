@@ -1,8 +1,8 @@
 package shortener
 
 import (
+	"github.com/nayakunin/shortener/internal/app/config"
 	"github.com/nayakunin/shortener/internal/app/interfaces"
-	"github.com/nayakunin/shortener/internal/app/server/config"
 )
 
 type Shortener interface {

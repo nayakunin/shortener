@@ -1,4 +1,4 @@
-package server
+package rest
 
 import (
 	"errors"
@@ -16,14 +16,14 @@ func (s Server) SaveLinkHandler(c *gin.Context) {
 	// read body
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal rest error"})
 		return
 	}
 
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal rest error"})
 			return
 		}
 	}(c.Request.Body)
@@ -35,7 +35,7 @@ func (s Server) SaveLinkHandler(c *gin.Context) {
 
 	userID, ok := c.MustGet("uuid").(string)
 	if !ok {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal rest error"})
 		return
 	}
 
@@ -54,7 +54,7 @@ func (s Server) SaveLinkHandler(c *gin.Context) {
 			return
 		}
 
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal rest error"})
 		return
 	}
 

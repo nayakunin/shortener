@@ -1,4 +1,4 @@
-// Package middleware provides middleware for the server.
+// Package middleware provides middleware for the rest.
 package middleware
 
 import (
@@ -20,8 +20,6 @@ var (
 	// ErrInvalidCookieSignature is returned when cookie has invalid signature.
 	ErrInvalidCookieSignature = errors.New("invalid cookie signature")
 )
-
-var secret = "secret"
 
 func encodeCookie(value, secretKey string) string {
 	h := hmac.New(sha256.New, []byte(secretKey))

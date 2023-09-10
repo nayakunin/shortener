@@ -1,4 +1,4 @@
-package server
+package rest
 
 import (
 	"bytes"
@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nayakunin/shortener/internal/app/server/testutils"
 	"github.com/nayakunin/shortener/internal/app/services/shortener"
+	"github.com/nayakunin/shortener/internal/app/testutils"
 )
 
 func ExampleServer_GetLinkHandler() {

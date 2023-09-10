@@ -1,4 +1,4 @@
-package server
+package rest
 
 import (
 	"net/http"
@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nayakunin/shortener/internal/app/server/testutils"
 	"github.com/nayakunin/shortener/internal/app/services/shortener"
+	"github.com/nayakunin/shortener/internal/app/testutils"
 	"github.com/stretchr/testify/assert"
 )
 

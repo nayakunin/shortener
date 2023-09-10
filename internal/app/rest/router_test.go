@@ -1,4 +1,4 @@
-package server
+package rest
 
 import (
 	"net/http"
@@ -6,9 +6,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/nayakunin/shortener/internal/app/server/config"
-	"github.com/nayakunin/shortener/internal/app/server/testutils"
+	"github.com/nayakunin/shortener/internal/app/config"
 	"github.com/nayakunin/shortener/internal/app/services/shortener"
+	"github.com/nayakunin/shortener/internal/app/testutils"
 	"github.com/stretchr/testify/assert"
 )
 

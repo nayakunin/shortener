@@ -112,7 +112,7 @@ func (c *shortenerClient) Ping(ctx context.Context, in *Empty, opts ...grpc.Call
 	return out, nil
 }
 
-// ShortenerServer is the server API for Shortener service.
+// ShortenerServer is the rest API for Shortener service.
 // All implementations must embed UnimplementedShortenerServer
 // for forward compatibility
 type ShortenerServer interface {

@@ -1,12 +1,12 @@
-// Package server provides server for the application.
-package server
+// Package rest provides rest for the application.
+package rest
 
 import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nayakunin/shortener/internal/app/interfaces"
-	"github.com/nayakunin/shortener/internal/app/server/middleware"
+	"github.com/nayakunin/shortener/internal/app/rest/middleware"
 	"golang.org/x/crypto/acme/autocert"
 )
 
@@ -20,7 +20,7 @@ type Shortener interface {
 	Ping() error
 }
 
-// Server is a struct of the server.
+// Server is a struct of the rest.
 type Server struct {
 	Shortener Shortener
 }

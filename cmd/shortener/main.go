@@ -15,9 +15,9 @@ import (
 	"time"
 
 	"github.com/gin-contrib/pprof"
+	"github.com/nayakunin/shortener/internal/app/config"
 	"github.com/nayakunin/shortener/internal/app/grpc"
-	"github.com/nayakunin/shortener/internal/app/server"
-	"github.com/nayakunin/shortener/internal/app/server/config"
+	"github.com/nayakunin/shortener/internal/app/rest"
 	"github.com/nayakunin/shortener/internal/app/services/shortener"
 	pb "github.com/nayakunin/shortener/proto"
 	grpcCore "google.golang.org/grpc"
@@ -68,7 +68,7 @@ func main() {
 
 	shortenerService := shortener.NewShortenerService(*cfg, storage)
 
-	r, m := server.NewRouter(shortenerService, &wg, cfg.AuthSecret, cfg.TrustedSubnet)
+	r, m := rest.NewRouter(shortenerService, &wg, cfg.AuthSecret, cfg.TrustedSubnet)
 	pprof.Register(r)
 
 	srv := &http.Server{
@@ -83,7 +83,7 @@ func main() {
 	go func() {
 		<-quit // blocking until a signal is received
 
-		fmt.Println("Shutting down server...")
+		fmt.Println("Shutting down rest...")
 
 		// Context with a timeout to ensure all requests are processed
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -114,7 +114,7 @@ func main() {
 	}()
 
 	go func() {
-		fmt.Printf("Starting server on %s\n", cfg.ServerAddress)
+		fmt.Printf("Starting rest on %s\n", cfg.ServerAddress)
 		if err := srv.ListenAndServeTLS("", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("listen: %s\n", err)
 		}

@@ -1,4 +1,4 @@
-package server
+package rest
 
 import (
 	"encoding/json"
@@ -29,7 +29,7 @@ type ShortenBatchOutput struct {
 func (s Server) ShortenBatchHandler(c *gin.Context) {
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal rest error"})
 		return
 	}
 
@@ -47,7 +47,7 @@ func (s Server) ShortenBatchHandler(c *gin.Context) {
 
 	userID, ok := c.MustGet("uuid").(string)
 	if !ok {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal rest error"})
 		return
 	}
 
@@ -77,7 +77,7 @@ func (s Server) ShortenBatchHandler(c *gin.Context) {
 			return
 		}
 
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal rest error"})
 		return
 	}
 
