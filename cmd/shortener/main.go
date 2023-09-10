@@ -113,10 +113,7 @@ func main() {
 		}
 	}()
 
-	go func() {
-		fmt.Printf("Starting rest on %s\n", cfg.ServerAddress)
-		if err := srv.ListenAndServeTLS("", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("listen: %s\n", err)
-		}
-	}()
+	if err := srv.ListenAndServeTLS("", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatalf("listen: %s\n", err)
+	}
 }
