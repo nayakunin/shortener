@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package generated;
+
+option go_package = "shortener/internal/generated";
+
+service Shortener {
+  rpc DeleteUserUrls(DeleteUserUrlsRequest) returns (Empty);
+  rpc GetUrlsByUser(Empty) returns (GetUrlsByUserReply);
+  rpc GetLink(GetLinkRequest) returns (GetLinkReply);
+  rpc SaveLink(SaveLinkRequest) returns (SaveLinkReply);
+  rpc Shorten(ShortenRequest) returns (ShortenReply);
+  rpc ShortenBatch(ShortenBatchRequest) returns (ShortenBatchReply);
+  rpc Stats(Empty) returns (StatsReply);
+  rpc Ping(Empty) returns (Empty);
+}
+
+message DeleteUserUrlsRequest {
+  repeated string keys = 1;
+}
+
+message GetUrlsByUserLink {
+  string shortUrl = 1;
+  string originalUrl = 2;
+}
+
+message GetUrlsByUserReply {
+  repeated GetUrlsByUserLink urls = 1;
+}
+
+message GetLinkRequest {
+  string key = 1;
+}
+
+message GetLinkReply {
+  string url = 1;
+}
+
+message SaveLinkRequest {
+  string url = 2;
+}
+
+message SaveLinkReply {
+  string url = 1;
+}
+
+message ShortenRequest {
+  string url = 1;
+}
+
+message ShortenReply {
+  string url = 1;
+}
+
+message ShortenBatchInput {
+  string correlationId = 1;
+  string originalUrl = 2;
+}
+
+message ShortenBatchRequest {
+  repeated ShortenBatchInput urls = 1;
+}
+
+message ShortenBatchOutput {
+  string correlationId = 1;
+  string shortUrl = 2;
+}
+
+message ShortenBatchReply {
+  repeated ShortenBatchOutput urls = 1;
+}
+
+message StatsReply {
+  int64 urls = 1;
+  int64 users = 2;
+}
+
+message Empty {}

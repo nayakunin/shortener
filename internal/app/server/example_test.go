@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nayakunin/shortener/internal/app/server/testutils"
+	"github.com/nayakunin/shortener/internal/app/services/shortener"
 )
 
 func ExampleServer_GetLinkHandler() {
@@ -19,9 +20,9 @@ func ExampleServer_GetLinkHandler() {
 		},
 	})
 	cfg := testutils.NewMockConfig()
+	service := shortener.NewShortenerService(cfg, s)
 	server := Server{
-		Storage: s,
-		Cfg:     cfg,
+		Shortener: service,
 	}
 
 	router := gin.Default()
@@ -39,9 +40,9 @@ func ExampleServer_GetLinkHandler() {
 func ExampleServer_ShortenHandler() {
 	s := testutils.NewMockStorage([]testutils.MockLink{})
 	cfg := testutils.NewMockConfig()
+	service := shortener.NewShortenerService(cfg, s)
 	server := Server{
-		Storage: s,
-		Cfg:     cfg,
+		Shortener: service,
 	}
 
 	router := gin.Default()
@@ -61,9 +62,9 @@ func ExampleServer_ShortenHandler() {
 func ExampleServer_DeleteUserUrlsHandler() {
 	s := testutils.NewMockStorage([]testutils.MockLink{})
 	cfg := testutils.NewMockConfig()
+	service := shortener.NewShortenerService(cfg, s)
 	server := Server{
-		Storage: s,
-		Cfg:     cfg,
+		Shortener: service,
 	}
 
 	router := gin.Default()

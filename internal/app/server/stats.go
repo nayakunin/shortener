@@ -7,7 +7,7 @@ import (
 )
 
 func (s Server) statsHandler(c *gin.Context) {
-	stats, err := s.Storage.Stats()
+	stats, err := s.Shortener.Stats()
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return

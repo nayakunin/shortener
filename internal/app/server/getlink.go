@@ -19,7 +19,7 @@ func (s Server) GetLinkHandler(c *gin.Context) {
 		return
 	}
 
-	link, err := s.Storage.Get(id)
+	link, err := s.Shortener.Get(id)
 	if err != nil {
 		if errors.Is(err, storage.ErrKeyDeleted) {
 			c.AbortWithStatusJSON(http.StatusGone, gin.H{"error": "Gone"})

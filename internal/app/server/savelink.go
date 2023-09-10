@@ -1,12 +1,12 @@
 package server
 
 import (
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
-	"net/url"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/services/shortener"
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
@@ -33,25 +33,24 @@ func (s Server) SaveLinkHandler(c *gin.Context) {
 		return
 	}
 
-	urlString := string(body)
-
-	_, err = url.ParseRequestURI(urlString)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid url"})
-		return
-	}
-
 	userID, ok := c.MustGet("uuid").(string)
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
+	urlString := string(body)
+
 	// add to storage
-	key, err := s.Storage.Add(urlString, userID)
+	shortURL, err := s.Shortener.Shorten(userID, urlString)
 	if err != nil {
-		if err == storage.ErrKeyExists {
-			c.String(http.StatusConflict, fmt.Sprintf("%s/%s", s.Cfg.BaseURL, key))
+		if errors.Is(err, shortener.ErrInvalidURL) {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid url"})
+			return
+		}
+
+		if errors.Is(err, storage.ErrKeyExists) {
+			c.String(http.StatusConflict, shortURL)
 			return
 		}
 
@@ -60,5 +59,5 @@ func (s Server) SaveLinkHandler(c *gin.Context) {
 	}
 
 	c.Header("Content-Type", "text/plain; charset=utf-8")
-	c.String(http.StatusCreated, fmt.Sprintf("%s/%s", s.Cfg.BaseURL, key))
+	c.String(http.StatusCreated, shortURL)
 }

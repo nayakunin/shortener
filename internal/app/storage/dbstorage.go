@@ -127,7 +127,7 @@ func (s *DBStorage) Add(link string, userID string) (string, error) {
 }
 
 // AddBatch adds new links to storage
-func (s *DBStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error) {
+func (s *DBStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.DBBatchOutput, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
@@ -148,7 +148,7 @@ func (s *DBStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]
 		return nil, err
 	}
 
-	output := make([]interfaces.BatchOutput, len(batches))
+	output := make([]interfaces.DBBatchOutput, len(batches))
 	for i, linkObject := range batches {
 		if _, err := url.ParseRequestURI(linkObject.OriginalURL); err != nil {
 			return nil, ErrBatchInvalidURL
@@ -161,7 +161,7 @@ func (s *DBStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]
 			return nil, err
 		}
 
-		output[i] = interfaces.BatchOutput{
+		output[i] = interfaces.DBBatchOutput{
 			Key:           key,
 			CorrelationID: linkObject.CorrelationID,
 		}

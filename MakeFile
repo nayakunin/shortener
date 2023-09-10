@@ -1,4 +1,4 @@
-.PHONY: build-linter run-linter clean-linter lint run
+.PHONY: build-linter run-linter clean-linter lint run generate
 
 build-linter:
 	@echo "Building staticlint..."
@@ -18,3 +18,17 @@ run:
 	@echo "Running shortener..."
 	-go run -ldflags "-X main.BuildVersion=v1 -X 'main.BuildTime=$$(date +'%Y/%m/%d %H:%M:%S')' -X 'main.BuildCommit=$$(git rev-parse HEAD)'" ./cmd/shortener -d "postgresql://localhost:5432/postgres?sslmode=disable"
 
+# generate:
+  #    @echo "Generating protobuf files..."
+  #    protoc \
+  #      --plugin=protoc-gen-go=./vendor/google.golang.org/protobuf/cmd/protoc-gen-go \
+  #      --go_out=. --go_opt=paths=./internal/generated \
+  #      --plugin=protoc-gen-go-grpc=./vendor/google.golang.org/grpc/cmd/protoc-gen-go-grpc \
+  #      --go-grpc_out=. --go-grpc_opt=paths=./internal/generated \
+  #      proto/proto.proto
+
+generate:
+	@echo "Generating protobuf files..."
+	protoc --go_out=. --go_opt=paths=source_relative \
+          --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+          api/api.proto

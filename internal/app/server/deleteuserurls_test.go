@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nayakunin/shortener/internal/app/server/testutils"
+	"github.com/nayakunin/shortener/internal/app/services/shortener"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,12 +47,12 @@ func TestDeleteUserUrls(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := testutils.NewMockStorage(tt.links)
+			store := testutils.NewMockStorage(tt.links)
+			service := shortener.NewShortenerService(cfg, store)
 			router := gin.Default()
 			testutils.AddContext(router, cfg, "userID")
 			server := Server{
-				Storage: s,
-				Cfg:     cfg,
+				Shortener: service,
 			}
 			router.GET("/", server.DeleteUserUrlsHandler)
 

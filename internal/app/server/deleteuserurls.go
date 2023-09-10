@@ -30,7 +30,7 @@ func (s Server) DeleteUserUrlsHandler(c *gin.Context) {
 		return
 	}
 
-	if err := s.Storage.DeleteUserUrls(userID, keys); err != nil {
+	if err := s.Shortener.DeleteUserUrls(userID, keys); err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

@@ -27,7 +27,7 @@ var ErrKeyNotFound = errors.New("key not found")
 type Storager interface {
 	Get(key string) (string, error)
 	Add(link string, userID string) (string, error)
-	AddBatch(batch []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error)
+	AddBatch(batch []interfaces.BatchInput, userID string) ([]interfaces.DBBatchOutput, error)
 	GetUrlsByUser(userID string) (map[string]string, error)
 	DeleteUserUrls(userID string, keys []string) error
 	Stats() (interfaces.Stats, error)

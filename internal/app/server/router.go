@@ -6,27 +6,30 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nayakunin/shortener/internal/app/interfaces"
-	"github.com/nayakunin/shortener/internal/app/server/config"
 	"github.com/nayakunin/shortener/internal/app/server/middleware"
 	"golang.org/x/crypto/acme/autocert"
 )
 
-// Server is a struct of the server.
-type Server struct {
-	Cfg     config.Config
-	Storage interfaces.Storage
+type Shortener interface {
+	Shorten(userID string, url string) (string, error)
+	ShortenBatch(userID string, urls []interfaces.BatchInput) ([]interfaces.BatchOutput, error)
+	Get(key string) (string, error)
+	DeleteUserUrls(userID string, keys []string) error
+	GetUrlsByUser(userID string) ([]interfaces.Link, error)
+	Stats() (*interfaces.Stats, error)
+	Ping() error
 }
 
-func setupRouter(wg *sync.WaitGroup, s Server) (*gin.Engine, *autocert.Manager) {
+// Server is a struct of the server.
+type Server struct {
+	Shortener Shortener
+}
+
+func setupRouter(wg *sync.WaitGroup, s Server, authSecret string, trustedSubnet string) (*gin.Engine, *autocert.Manager) {
 	r := gin.Default()
 
-	r.Use(func(c *gin.Context) {
-		c.Set("config", s.Cfg)
-		c.Next()
-	})
-
 	r.Use(middleware.Gzip())
-	r.Use(middleware.Auth(s.Cfg.AuthSecret))
+	r.Use(middleware.Auth(authSecret))
 	r.Use(middleware.WaitGroup(wg))
 
 	{
@@ -35,7 +38,7 @@ func setupRouter(wg *sync.WaitGroup, s Server) (*gin.Engine, *autocert.Manager) 
 		r.GET("/:id", s.GetLinkHandler)
 	}
 
-	api := r.Group("/api")
+	api := r.Group("/proto")
 	{
 		api.POST("/shorten", s.ShortenHandler)
 		api.POST("/shorten/batch", s.ShortenBatchHandler)
@@ -43,7 +46,7 @@ func setupRouter(wg *sync.WaitGroup, s Server) (*gin.Engine, *autocert.Manager) 
 		api.DELETE("/user/urls", s.DeleteUserUrlsHandler)
 
 		internal := api.Group("/internal")
-		internal.Use(middleware.Internal(s.Cfg.TrustedSubnet))
+		internal.Use(middleware.Internal(trustedSubnet))
 		{
 			internal.GET("/internal/stats", s.statsHandler)
 		}
@@ -59,9 +62,10 @@ func setupRouter(wg *sync.WaitGroup, s Server) (*gin.Engine, *autocert.Manager) 
 }
 
 // NewRouter returns a new router for the application
-func NewRouter(cfg config.Config, s interfaces.Storage, wg *sync.WaitGroup) (*gin.Engine, *autocert.Manager) {
-	return setupRouter(wg, Server{
-		Cfg:     cfg,
-		Storage: s,
-	})
+func NewRouter(shortener Shortener, wg *sync.WaitGroup, authSecret string, trustedSubnet string) (*gin.Engine, *autocert.Manager) {
+	server := Server{
+		Shortener: shortener,
+	}
+
+	return setupRouter(wg, server, authSecret, trustedSubnet)
 }

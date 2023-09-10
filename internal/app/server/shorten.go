@@ -2,12 +2,12 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
-	"net/url"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nayakunin/shortener/internal/app/services/shortener"
 	"github.com/nayakunin/shortener/internal/app/storage"
 )
 
@@ -42,22 +42,21 @@ func (s Server) ShortenHandler(c *gin.Context) {
 		return
 	}
 
-	_, err = url.ParseRequestURI(req.URL)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid url"})
-		return
-	}
-
 	userID, ok := c.MustGet("uuid").(string)
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	key, err := s.Storage.Add(req.URL, userID)
+	shortUrl, err := s.Shortener.Shorten(userID, req.URL)
 	if err != nil {
-		if err == storage.ErrKeyExists {
-			c.AbortWithStatusJSON(http.StatusConflict, ShortenResponse{Result: fmt.Sprintf("%s/%s", s.Cfg.BaseURL, key)})
+		if errors.Is(err, shortener.ErrInvalidURL) {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid url"})
+			return
+		}
+
+		if errors.Is(err, storage.ErrKeyExists) {
+			c.AbortWithStatusJSON(http.StatusConflict, ShortenResponse{Result: shortUrl})
 			return
 		}
 
@@ -65,5 +64,5 @@ func (s Server) ShortenHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, ShortenResponse{Result: fmt.Sprintf("%s/%s", s.Cfg.BaseURL, key)})
+	c.JSON(http.StatusCreated, ShortenResponse{Result: shortUrl})
 }

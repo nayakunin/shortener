@@ -83,14 +83,14 @@ func (s *MockStorage) GetUrlsByUser(userID string) (map[string]string, error) {
 }
 
 // AddBatch implements interfaces.Storage
-func (s *MockStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error) {
-	output := make([]interfaces.BatchOutput, len(batches))
+func (s *MockStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.DBBatchOutput, error) {
+	output := make([]interfaces.DBBatchOutput, len(batches))
 	for i, linkObject := range batches {
 		key, err := s.Add(linkObject.OriginalURL, userID)
 		if err != nil {
 			return nil, err
 		}
-		output[i] = interfaces.BatchOutput{
+		output[i] = interfaces.DBBatchOutput{
 			Key:           key,
 			CorrelationID: linkObject.CorrelationID,
 		}
@@ -131,6 +131,13 @@ func (s *MockStorage) DeleteUserUrls(userID string, keys []string) error {
 	s.users[userID] = userLinks
 
 	return nil
+}
+
+func (s *MockStorage) Stats() (interfaces.Stats, error) {
+	return interfaces.Stats{
+		Urls:  len(s.links),
+		Users: len(s.users),
+	}, nil
 }
 
 // NewMockConfig creates a new mock config

@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nayakunin/shortener/internal/app/server/testutils"
+	"github.com/nayakunin/shortener/internal/app/services/shortener"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -79,9 +80,9 @@ func TestSaveLink(t *testing.T) {
 			s := testutils.NewMockStorage(tt.links)
 			router := gin.Default()
 			testutils.AddContext(router, cfg, "userID")
+			service := shortener.NewShortenerService(cfg, s)
 			server := Server{
-				Storage: s,
-				Cfg:     cfg,
+				Shortener: service,
 			}
 			router.POST("/", server.SaveLinkHandler)
 

@@ -1,11 +1,11 @@
 package server
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nayakunin/shortener/internal/app/interfaces"
+	"github.com/nayakunin/shortener/internal/app/services/shortener"
 )
 
 // GetUrlsByUserHandler handles GET /urls
@@ -16,24 +16,16 @@ func (s Server) GetUrlsByUserHandler(c *gin.Context) {
 		return
 	}
 
-	urls, err := s.Storage.GetUrlsByUser(userID)
+	urls, err := s.Shortener.GetUrlsByUser(userID)
 	if err != nil {
+		if errors.Is(err, shortener.ErrNoUrlsFound) {
+			c.AbortWithStatusJSON(http.StatusNoContent, gin.H{"message": "no urls found"})
+			return
+		}
+
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	if len(urls) == 0 {
-		c.AbortWithStatusJSON(http.StatusNoContent, gin.H{"message": "no urls found"})
-		return
-	}
-
-	response := make([]interfaces.Link, 0, len(urls))
-	for shortURL, originalURL := range urls {
-		response = append(response, interfaces.Link{
-			ShortURL:    fmt.Sprintf("%s/%s", s.Cfg.BaseURL, shortURL),
-			OriginalURL: originalURL,
-		})
-	}
-
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, urls)
 }

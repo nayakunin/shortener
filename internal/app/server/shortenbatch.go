@@ -2,7 +2,7 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -65,14 +65,14 @@ func (s Server) ShortenBatchHandler(c *gin.Context) {
 		}
 	}
 
-	output, err := s.Storage.AddBatch(input, userID)
+	output, err := s.Shortener.ShortenBatch(userID, input)
 	if err != nil {
-		if err == storage.ErrKeyExists {
+		if errors.Is(err, storage.ErrKeyExists) {
 			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": "Key already exists"})
 			return
 		}
 
-		if err == storage.ErrBatchInvalidURL {
+		if errors.Is(err, storage.ErrBatchInvalidURL) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid url"})
 			return
 		}
@@ -85,7 +85,7 @@ func (s Server) ShortenBatchHandler(c *gin.Context) {
 	for i, v := range output {
 		response[i] = ShortenBatchOutput{
 			CorrelationID: v.CorrelationID,
-			ShortURL:      fmt.Sprintf("%s/%s", s.Cfg.BaseURL, v.Key),
+			ShortURL:      v.ShortURL,
 		}
 	}
 

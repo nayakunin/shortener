@@ -8,6 +8,7 @@ import (
 
 	"github.com/nayakunin/shortener/internal/app/server/config"
 	"github.com/nayakunin/shortener/internal/app/server/testutils"
+	"github.com/nayakunin/shortener/internal/app/services/shortener"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,8 +19,9 @@ func TestNewRouter(t *testing.T) {
 	cfg := config.Config{}
 
 	wg := &sync.WaitGroup{}
+	service := shortener.NewShortenerService(cfg, mockStorage)
 
-	router, _ := NewRouter(cfg, mockStorage, wg)
+	router, _ := NewRouter(service, wg, cfg.AuthSecret, cfg.TrustedSubnet)
 
 	t.Run("Test Ping Endpoint", func(t *testing.T) {
 		w := httptest.NewRecorder()

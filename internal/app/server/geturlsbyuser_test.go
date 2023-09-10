@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nayakunin/shortener/internal/app/server/testutils"
+	"github.com/nayakunin/shortener/internal/app/services/shortener"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,7 +27,7 @@ func TestGetUrlsByUser(t *testing.T) {
 	}{
 		{
 			name:    "not found",
-			request: "/api/user/urls",
+			request: "/proto/user/urls",
 			want: want{
 				statusCode:  http.StatusNoContent,
 				contentType: "application/json; charset=utf-8",
@@ -34,7 +35,7 @@ func TestGetUrlsByUser(t *testing.T) {
 		},
 		{
 			name:    "success",
-			request: "/api/user/urls",
+			request: "/proto/user/urls",
 			links: []testutils.MockLink{
 				{
 					OriginalURL: "https://google.com",
@@ -54,14 +55,14 @@ func TestGetUrlsByUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			s := testutils.NewMockStorage(tt.links)
 			cfg := testutils.NewMockConfig()
+			service := shortener.NewShortenerService(cfg, s)
 			server := Server{
-				Storage: s,
-				Cfg:     cfg,
+				Shortener: service,
 			}
 
 			router := gin.Default()
 			testutils.AddContext(router, cfg, "userID")
-			router.GET("/api/user/urls", server.GetUrlsByUserHandler)
+			router.GET("/proto/user/urls", server.GetUrlsByUserHandler)
 
 			request := httptest.NewRequest(http.MethodGet, tt.request, nil)
 			w := httptest.NewRecorder()
