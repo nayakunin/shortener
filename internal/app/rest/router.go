@@ -38,7 +38,7 @@ func setupRouter(wg *sync.WaitGroup, s Server, authSecret string, trustedSubnet 
 		r.GET("/:id", s.GetLinkHandler)
 	}
 
-	api := r.Group("/proto")
+	api := r.Group("/api")
 	{
 		api.POST("/shorten", s.ShortenHandler)
 		api.POST("/shorten/batch", s.ShortenBatchHandler)
