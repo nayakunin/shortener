@@ -127,7 +127,7 @@ func (s *DBStorage) Add(link string, userID string) (string, error) {
 }
 
 // AddBatch adds new links to storage
-func (s *DBStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error) {
+func (s *DBStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.DBBatchOutput, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 
@@ -148,7 +148,7 @@ func (s *DBStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]
 		return nil, err
 	}
 
-	output := make([]interfaces.BatchOutput, len(batches))
+	output := make([]interfaces.DBBatchOutput, len(batches))
 	for i, linkObject := range batches {
 		if _, err := url.ParseRequestURI(linkObject.OriginalURL); err != nil {
 			return nil, ErrBatchInvalidURL
@@ -161,7 +161,7 @@ func (s *DBStorage) AddBatch(batches []interfaces.BatchInput, userID string) ([]
 			return nil, err
 		}
 
-		output[i] = interfaces.BatchOutput{
+		output[i] = interfaces.DBBatchOutput{
 			Key:           key,
 			CorrelationID: linkObject.CorrelationID,
 		}
@@ -223,4 +223,33 @@ func (s *DBStorage) processDeleteRequests() {
 			return
 		}
 	}
+}
+
+// Stats returns stats
+func (s *DBStorage) Stats() (interfaces.Stats, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
+	defer cancel()
+
+	conn, err := s.Pool.Acquire(ctx)
+	if err != nil {
+		return interfaces.Stats{}, err
+	}
+	defer conn.Release()
+
+	var urls int
+	err = conn.QueryRow(ctx, "SELECT COUNT(*) FROM links").Scan(&urls)
+	if err != nil {
+		return interfaces.Stats{}, err
+	}
+
+	var users int
+	err = conn.QueryRow(ctx, "SELECT COUNT(DISTINCT user_id) FROM links").Scan(&users)
+	if err != nil {
+		return interfaces.Stats{}, err
+	}
+
+	return interfaces.Stats{
+		Urls:  urls,
+		Users: users,
+	}, nil
 }

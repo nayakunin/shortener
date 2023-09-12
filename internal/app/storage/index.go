@@ -5,10 +5,9 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/nayakunin/shortener/internal/app/config"
 	"github.com/nayakunin/shortener/internal/app/interfaces"
 	"github.com/pkg/errors"
-
-	"github.com/nayakunin/shortener/internal/app/server/config"
 )
 
 // ErrKeyExists is returned when key already exists
@@ -27,9 +26,10 @@ var ErrKeyNotFound = errors.New("key not found")
 type Storager interface {
 	Get(key string) (string, error)
 	Add(link string, userID string) (string, error)
-	AddBatch(batch []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error)
+	AddBatch(batch []interfaces.BatchInput, userID string) ([]interfaces.DBBatchOutput, error)
 	GetUrlsByUser(userID string) (map[string]string, error)
 	DeleteUserUrls(userID string, keys []string) error
+	Stats() (interfaces.Stats, error)
 }
 
 // NewStorage returns new storage

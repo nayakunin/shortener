@@ -17,4 +17,3 @@ lint: run-linter clean-linter
 run:
 	@echo "Running shortener..."
 	-go run -ldflags "-X main.BuildVersion=v1 -X 'main.BuildTime=$$(date +'%Y/%m/%d %H:%M:%S')' -X 'main.BuildCommit=$$(git rev-parse HEAD)'" ./cmd/shortener -d "postgresql://localhost:5432/postgres?sslmode=disable"
-

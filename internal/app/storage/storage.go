@@ -64,14 +64,14 @@ func (s *Storage) Add(link string, userID string) (string, error) {
 }
 
 // AddBatch adds new links to storage
-func (s *Storage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.BatchOutput, error) {
-	output := make([]interfaces.BatchOutput, len(batches))
+func (s *Storage) AddBatch(batches []interfaces.BatchInput, userID string) ([]interfaces.DBBatchOutput, error) {
+	output := make([]interfaces.DBBatchOutput, len(batches))
 	for i, linkObject := range batches {
 		key, err := s.Add(linkObject.OriginalURL, userID)
 		if err != nil && !errors.Is(err, ErrKeyExists) {
 			return nil, err
 		}
-		output[i] = interfaces.BatchOutput{
+		output[i] = interfaces.DBBatchOutput{
 			Key:           key,
 			CorrelationID: linkObject.CorrelationID,
 		}
@@ -128,4 +128,15 @@ func (s *Storage) DeleteUserUrls(userID string, keys []string) error {
 	s.users[userID] = userLinks
 
 	return nil
+}
+
+// Stats returns stats
+func (s *Storage) Stats() (interfaces.Stats, error) {
+	s.Lock()
+	defer s.Unlock()
+
+	return interfaces.Stats{
+		Urls:  len(s.links),
+		Users: len(s.users),
+	}, nil
 }

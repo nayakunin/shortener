@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,8 +15,12 @@ import (
 	"time"
 
 	"github.com/gin-contrib/pprof"
-	"github.com/nayakunin/shortener/internal/app/server"
-	"github.com/nayakunin/shortener/internal/app/server/config"
+	"github.com/nayakunin/shortener/internal/app/config"
+	"github.com/nayakunin/shortener/internal/app/grpc"
+	"github.com/nayakunin/shortener/internal/app/rest"
+	"github.com/nayakunin/shortener/internal/app/services/shortener"
+	pb "github.com/nayakunin/shortener/proto"
+	grpcCore "google.golang.org/grpc"
 
 	storagePackage "github.com/nayakunin/shortener/internal/app/storage"
 )
@@ -60,7 +66,9 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	r, m := server.NewRouter(*cfg, storage, &wg)
+	shortenerService := shortener.NewShortenerService(*cfg, storage)
+
+	r, m := rest.NewRouter(shortenerService, &wg, cfg.AuthSecret, cfg.TrustedSubnet)
 	pprof.Register(r)
 
 	srv := &http.Server{
@@ -75,7 +83,7 @@ func main() {
 	go func() {
 		<-quit // blocking until a signal is received
 
-		fmt.Println("Shutting down server...")
+		fmt.Println("Shutting down rest...")
 
 		// Context with a timeout to ensure all requests are processed
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -91,7 +99,21 @@ func main() {
 		}
 	}()
 
-	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	go func() {
+		lis, err := net.Listen("tcp", ":50051")
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
+
+		grpcServer := grpcCore.NewServer()
+		pb.RegisterShortenerServer(grpcServer, grpc.NewServer(shortenerService))
+
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	}()
+
+	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("listen: %s\n", err)
 	}
 }
